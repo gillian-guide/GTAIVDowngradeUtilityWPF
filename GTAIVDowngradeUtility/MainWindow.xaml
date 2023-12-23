@@ -1,0 +1,55 @@
+﻿<Window x:Class="GTAIVDowngradeUtilityWPF.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:GTAIVDowngradeUtilityWPF"
+        mc:Ignorable="d"
+        Title="Gillian's GTA IV Downgrade Utility"
+        SizeToContent="WidthAndHeight"
+        WindowStartupLocation="CenterScreen"
+        Icon="/Assets/ivlogo.png"
+        ResizeMode="NoResize">
+    <Grid>
+        <StackPanel Margin="5,5,5,5" Grid.ColumnSpan="2">
+            <TextBlock Margin="0,0,0,0" FontSize="28" TextWrapping="Wrap" HorizontalAlignment="Center">Gillian's GTA IV Downgrade Utility</TextBlock>
+            <TextBlock x:Name="directorytxt" HorizontalAlignment="Left" Margin="0,5,0,0" TextWrapping="Wrap" Text="Set your game directory before using:" VerticalAlignment="Top"/>
+            <StackPanel Orientation="Horizontal">
+                <TextBox HorizontalAlignment="Left" x:Name="gamedirectory" Margin="0,2,0,0" VerticalAlignment="Top" Width="354" IsEnabled="False"/>
+                <Button Content="Open..." HorizontalAlignment="Left" Margin="5,0,0,0" VerticalAlignment="Top" Width="60" Click="Button_Click"/>
+            </StackPanel>
+            <StackPanel Margin="0,5,0,0" Orientation="Horizontal" HorizontalAlignment="Center">
+                <TextBlock Margin="0,0,0,0" FontSize="12" TextWrapping="Wrap" HorizontalAlignment="Center">Keep the options at default values unless you know what you're doing.</TextBlock>
+                <CheckBox x:Name="tipscheck" Margin="5,0,0,0" IsChecked="True" HorizontalAlignment="Right">Tips</CheckBox>
+            </StackPanel>
+            <StackPanel x:Name="downgradeOptionsPanel" Margin="0,5,0,0" HorizontalAlignment="Center" IsEnabled="False">
+                <StackPanel Orientation="Horizontal">
+                    <RadioButton Content="Fast downgrade" x:Name="fastdowngradeclick" IsChecked="True" Click="downgradeopt_Click"/>
+                    <RadioButton Content="Long downgrade (Depot Download)" x:Name="longdowngradeclick" Margin="5,0,0,0" Click="downgradeopt_Click"/>
+                </StackPanel>
+                <StackPanel Margin="0,5,0,0" Orientation="Horizontal"  HorizontalAlignment="Center">
+                    <RadioButton Content="1.0.7.0" x:Name="patch7click" Click="version_Click"/>
+                    <RadioButton Content="1.0.8.0" x:Name="patch8click" IsChecked="True" Margin="5,0,0,0" Click="version_Click"/>
+                </StackPanel>
+                <StackPanel Margin="0,5,0,0" Orientation="Horizontal" HorizontalAlignment="Center">
+                     <CheckBox Content="Downgrade radio" x:Name="radiocheckbox" IsChecked="True" Click="radio_Click"/>
+                     <CheckBox Content="SecuROM bypass" x:Name="securomcheckbox" Margin="5,0,0,0" IsChecked="True" Click="securom_Click" IsEnabled="False"/>
+                </StackPanel>
+                <StackPanel Margin="0,5,0,0" Orientation="Horizontal" HorizontalAlignment="Center">
+                    <CheckBox Content="Install ZolikaPatch" x:Name="zpatchcheckbox" Margin="-8,0,0,0" IsChecked="True" Click="zpatch_Click"/>
+                    <CheckBox Content="Install FusionFix" x:Name="ffixcheckbox"  Margin="2,0,0,0" IsChecked="True" Click="ffix_Click"/>
+                </StackPanel>
+                <CheckBox Content="Make GFWL-compatible" x:Name="gfwlcheckbox" Margin="0,5,0,0" HorizontalAlignment="Center" IsChecked="True" Click="gfwl_Click"/>
+                <Button Content="Downgrade" x:Name="downgradebtn" Margin="0,5,0,0" Width="160" Height="25" Click="downgrade_Click"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                <TextBlock HorizontalAlignment="Left" Margin="0,0,0,0" TextWrapping="Wrap" VerticalAlignment="Bottom"><Hyperlink NavigateUri="https://gillian-guide.github.io/" RequestNavigate="Hyperlink_RequestNavigate">Visit my Guide</Hyperlink></TextBlock>
+                <TextBlock HorizontalAlignment="Center" Margin="10,0,0,0" TextWrapping="Wrap" VerticalAlignment="Bottom"><Hyperlink NavigateUri="https://discord.gg/gtrf" RequestNavigate="Hyperlink_RequestNavigate">RevIVal Discord Server</Hyperlink></TextBlock>
+                <TextBlock HorizontalAlignment="Right" Margin="67,0,0,0" TextWrapping="Wrap" VerticalAlignment="Bottom"><Hyperlink NavigateUri="https://github.com/gillian-guide/GTAIVDowngradeUtilityWPF" RequestNavigate="Hyperlink_RequestNavigate">This tool is open source</Hyperlink></TextBlock>
+                <Button x:Name="aboutButton" Margin="3,0,0,0" Width="20" HorizontalAlignment="Right" Click="aboutButton_Click">
+                    <Image Source="../Assets/about.png"></Image>
+                </Button>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Window>
