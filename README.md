@@ -16,7 +16,7 @@ Semi-automatically downgrades your GTA IV installation to 1.0.8.0 or 1.0.7.0.
 - ~~Downgrading via Steam Depots~~ <- currently in development!
 
 ## Contribution
-Contribution is highly welcome. I'm poorly experienced with C#, but this rewrite was needed for many reasons. And so, the current code is extremely clunky and works out of prayers.
+Contribution is highly welcome. I'm poorly experienced with C#, so the current code is extremely clunky and works out of prayers.
 
 ## Attribution
 Following NuGet packages were used to create this app:
