@@ -11,7 +11,7 @@ Semi-automatically downgrades your GTA IV installation to 1.0.8.0 or 1.0.7.0.
 - Done!
 
 ## Features
-- Downgrading the game to 1.0.8.0.
+- Downgrading the game to 1.0.8.0 or 1.0.7.0.
 - Taking the selected toggles in account to automatically adjust logic.
 - ~~Downgrading via Steam Depots~~ <- currently in development!
 
