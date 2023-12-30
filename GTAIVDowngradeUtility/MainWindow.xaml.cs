@@ -1,16 +1,22 @@
-using ByteSizeLib;
 using GTAIVDowngradeUtilityWPF.Common;
+using GTAIVDowngradeUtilityWPF.GTAIVDowngradeUtility;
+using GTAIVSetupUtilityWPF.Functions;
+using Microsoft.VisualBasic.FileIO;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using NLog;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Management;
 using System.Net.Http;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
@@ -20,12 +26,8 @@ namespace GTAIVDowngradeUtilityWPF
 {
     public partial class MainWindow : Window
     {
-
-        bool ffix;
-        bool isretail;
-        bool issteam;
-        string iniModify;
-        string ziniModify;
+        bool backupexists = false;
+        string directory;
 
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -48,24 +50,59 @@ namespace GTAIVDowngradeUtilityWPF
             Logger.Info(" Main window initialized!");
         }
 
+        private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
+        {
+            Logger.Debug(" User clicked on a hyperlink from the main window.");
+            ProcessStartInfo psi = new ProcessStartInfo
+            {
+                FileName = "cmd",
+                Arguments = $"/c start {e.Uri.AbsoluteUri}",
+                CreateNoWindow = true,
+                UseShellExecute = false,
+            };
+            Process.Start(psi);
+        }
+        private static void Empty(System.IO.DirectoryInfo directory)
+        {
+            foreach (System.IO.FileInfo file in directory.GetFiles()) file.Delete();
+            foreach (System.IO.DirectoryInfo subDirectory in directory.GetDirectories()) subDirectory.Delete(true);
+        }
+
+        private static void CopyFolder(string sourceFolder, string destinationFolder)
+        {
+            if (!Directory.Exists(destinationFolder))
+            {
+                Directory.CreateDirectory(destinationFolder);
+            }
+
+            string[] files = Directory.GetFiles(sourceFolder);
+            foreach (string file in files)
+            {
+                string fileName = Path.GetFileName(file);
+                string destinationFilePath = Path.Combine(destinationFolder, fileName);
+                File.Copy(file, destinationFilePath, true);
+            }
+
+            string[] subFolders = Directory.GetDirectories(sourceFolder);
+            foreach (string subFolder in subFolders)
+            {
+                string folderName = Path.GetFileName(subFolder);
+                string destinationSubFolder = Path.Combine(destinationFolder, folderName);
+                CopyFolder(subFolder, destinationSubFolder);
+            }
+        }
 
         private string GetAssemblyVersion()
         {
             return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString()
                 ?? String.Empty;
         }
-        private void downgradeopt_Click(object sender, RoutedEventArgs e)
-        {
-            Logger.Debug(" User toggled the variant of downgrading.");
-            if (longdowngradeclick.IsChecked == true)
-            {
 
-            }
-            if (tipscheck.IsChecked == true)
-            {
-                Logger.Debug(" Displaying a tip...");
-                MessageBox.Show("Fast downgrade works by using the Complete Edition files and a downgraded GTAIV.exe which works thanks to ZolikaPatch.\n\nLong downgrade will downgrade *all* the files to their pre-CE state with no leftovers. Please backup your game before using this.\n\nLong downgrade is unavailable if your copy is not a legit Steam copy, as it requires the ownership of the game on Steam.");
-            }
+        private void steamdepot_Click(object sender, RoutedEventArgs e)
+        {
+            Logger.Debug(" User switched to steam depot downgrading.");
+            DepotDownloaderWindow window2 = new DepotDownloaderWindow();
+            window2.Show();
         }
         private void version_Click(object sender, RoutedEventArgs e)
         {
@@ -80,54 +117,11 @@ namespace GTAIVDowngradeUtilityWPF
         private void radio_Click(object sender, RoutedEventArgs e)
         {
             Logger.Debug(" User toggled radio downgrading.");
-            if (radiocheckbox.IsChecked == true && fastdowngradeclick.IsChecked == true && ffixcheckbox.IsChecked == false)
-            {
-                MessageBox.Show("FusionFix will be enabled, as you can't downgrade radio without long downgrading and not use FusionFix.");
-                ffixcheckbox.IsChecked = true;
-            }
-            if (radiocheckbox.IsChecked == false && fastdowngradeclick.IsChecked == true && zpatchcheckbox.IsChecked == false)
-            {
-                MessageBox.Show("ZolikaPatch will be enabled, as you can't perform a fast downgrade without radio downgrading and not use ZolikaPatch.");
-                zpatchcheckbox.IsChecked = true;
-            }
             if (tipscheck.IsChecked == true)
             {
                 Logger.Debug(" Displaying a tip...");
-                string CurrentRadioDowngradeMethod = "Radio cannot be downgraded.";
-                switch (fastdowngradeclick.IsChecked, ffixcheckbox.IsChecked, patch7click.IsChecked)
-                {
-                    case (true, true, true):
-                    case (true, true, false):
-                    case (false, true, false):
-                        CurrentRadioDowngradeMethod = "Radio Downgrader for FusionFix will be installed.";
-                        break;
-                    case (false, false, false):
-                    case (false, false, true):
-                    case (false, true, true):
-                        CurrentRadioDowngradeMethod = "A depot with the old radio will be installed.";
-                        break;
 
-                }
-
-                MessageBox.Show($"This option downgrades your radio, and how that works out depends on your current options.\n\nCurrently, your radio downgrade method is:\n\n{CurrentRadioDowngradeMethod}");
-            }
-        }
-        private void securom_Click(object sender, RoutedEventArgs e)
-        {
-            Logger.Debug(" User toggled the SecuROM bypass");
-            if (tipscheck.IsChecked == true)
-            {
-                Logger.Debug(" Displaying a tip...");
-                MessageBox.Show("This option installs a Razor1991 crack to bypass the SecuROM requirement.\n\nOnly disable this if you want a pure depot version - however, you'll need a legit activation key to even make it work.");
-            }
-        }
-        private void zpatch_Click(object sender, RoutedEventArgs e)
-        {
-            Logger.Debug(" User toggled ZolikaPatch");
-            if (tipscheck.IsChecked == true)
-            {
-                Logger.Debug(" Displaying a tip...");
-                MessageBox.Show("This option installs ZolikaPatch.\n\nOnly disable this if you want a pure depot version - however, your game will likely have boot issues. You'll also be missing on a lot of things, like the DLC selector.");
+                MessageBox.Show($"This option will prompt you to downgrade your radio later depending on your current options. It is not necessary to do, however.");
             }
         }
         private void ffix_Click(object sender, RoutedEventArgs e)
@@ -148,11 +142,6 @@ namespace GTAIVDowngradeUtilityWPF
             }
         }
 
-        private void downgrade_Click(object sender, RoutedEventArgs e)
-        {
-            Logger.Debug(" Starting the downgrade...");
-        }
-
         private void aboutButton_Click(object sender, RoutedEventArgs e)
         {
             Logger.Debug(" User opened the About window.");
@@ -166,7 +155,7 @@ namespace GTAIVDowngradeUtilityWPF
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             Logger.Debug(" User is selecting the game folder...");
-            longdowngradeclick.IsEnabled = false;
+            steamdepotbtn.IsEnabled = false;
             while (true)
             {
                 CommonOpenFileDialog dialog = new CommonOpenFileDialog();
@@ -179,16 +168,18 @@ namespace GTAIVDowngradeUtilityWPF
                     {
                         if (AppVersionGrabber.GetFileVersion($"{dialog.FileName}\\GTAIV.exe").StartsWith("1, 0"))
                         {
-                            isretail = true;
                             Logger.Debug(" Folder contains a retail exe already.");
                             MessageBox.Show("Your game exe is already downgraded, proceeding to use the tool may produce unexpected results and corrupt the game.");
                         }
-                        else { isretail = false; Logger.Debug(" Folder contains an exe of Steam Version."); }
+                        else { Logger.Debug(" Folder contains an exe of Steam Version."); }
 
-                        if (dialog.InitialDirectory.Contains("Steam")){ issteam = true; longdowngradeclick.IsEnabled = true; }
+                        if (dialog.FileName.Contains("Steam")){ } // TODO: Add steamdepotbtn.IsEnabled = true; in here when the page is functional
+
+                        if (Directory.Exists($"{dialog.FileName}\\backup")) { backupexists = true; }
 
                         directorytxt.Text = "Game Directory:";
                         gamedirectory.Text = dialog.FileName;
+                        directory = dialog.FileName;
                         downgradeOptionsPanel.IsEnabled = true;
                         break;
                     }
@@ -196,7 +187,7 @@ namespace GTAIVDowngradeUtilityWPF
                     else
                     {
                         Logger.Debug(" User selected the wrong folder. Displaying a MessageBox.");
-                        MessageBox.Show("The selected folder does not contain a supported version of GTA IV.");
+                        MessageBox.Show("The selected folder does not contain GTA IV.");
                     }
                 }
                 else
@@ -206,17 +197,233 @@ namespace GTAIVDowngradeUtilityWPF
 
             }
         }
-        private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
+        private void Backup()
         {
-            Logger.Debug(" User clicked on a hyperlink from the main window.");
-            ProcessStartInfo psi = new ProcessStartInfo
+            Logger.Debug(" Starting backup...");
+            string backupfolder = $"{directory}\\backup";
+            if (backupexists == true)
             {
-                FileName = "cmd",
-                Arguments = $"/c start {e.Uri.AbsoluteUri}",
-                CreateNoWindow = true,
-                UseShellExecute = false,
+                MessageBoxResult result = MessageBox.Show("You already have an existing backup. Do you wish to replace it?", "Existing backup", MessageBoxButton.YesNo);
+                if (result == MessageBoxResult.Yes)
+                {
+                    System.IO.DirectoryInfo directoryclear = new System.IO.DirectoryInfo(backupfolder);
+                    Empty(directoryclear);
+                }
+                else
+                {
+                    Logger.Debug("User had an existing backup and chose not to replace it.");
+                    return;
+                }
+            }
+            else
+            {
+                Directory.CreateDirectory(backupfolder);
+            }
+            File.Copy($"{directory}\\GTAIV.exe", $"{backupfolder}\\GTAIV.exe");
+            File.Copy($"{directory}\\PlayGTAIV.exe", $"{backupfolder}\\PlayGTAIV.exe");
+            File.Copy($"{directory}\\steam_api.dll", $"{backupfolder}\\steam_api.dll");
+            foreach (var file in Directory.GetFiles(directory, "*.asi"))
+            {
+                File.Copy(file, Path.Combine(backupfolder, Path.GetFileName(file)));
+            }
+            foreach (var file in Directory.GetFiles(directory, "*.ini"))
+            {
+                File.Copy(file, Path.Combine(backupfolder, Path.GetFileName(file)));
+            }
+            if (Directory.Exists($"{directory}\\plugins"))
+            {
+                FileSystem.CopyDirectory($"{directory}\\plugins", $"{backupfolder}\\plugins");
+            }
+            backupexists = true;
+            Logger.Debug(" Backup complete, disabled the backup button to prevent accidental backups after downgrading.");
+        }
+
+        private void backup_Click(object sender, RoutedEventArgs e)
+        {
+            backupbtn.IsEnabled = false;
+            backupbtn.Content = "Backing up...";
+            Backup();
+            backupbtn.Content = "Backed up!";
+        }
+        private async void downgrade_Click(object sender, RoutedEventArgs e)
+        {
+            downgradeOptionsPanel.IsEnabled = false;
+            downgradebtn.Content = "Downgrading...";
+            Logger.Debug(" Starting the downgrade...");
+            if (backupexists == false)
+            {
+                MessageBoxResult result = MessageBox.Show("Backup not found. Do you wish to backup now?", "No backup found", MessageBoxButton.YesNo);
+                if (result == MessageBoxResult.Yes)
+                {
+                    Backup();
+                }
+            }
+            // http client for downloading fusionfix and asi loader
+            var httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.Add("User-Agent", "Other");
+
+            // removing any scripts because they can break shit and we don't want that
+            foreach (var file in Directory.GetFiles(directory, "*.asi"))
+            {
+                File.Delete(file);
+            }
+            foreach (var file in Directory.GetFiles(directory, "*.ini"))
+            {
+                File.Delete(file);
+            }
+            if (Directory.Exists($"{directory}\\plugins"))
+            {
+                Directory.Delete($"{directory}\\plugins", true);
+            }
+
+            // actually downgrading now
+
+            // ultimate asi loader
+            var configFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            var settings = configFile.AppSettings.Settings;
+            string downloadedual = settings["ultimate-asi-loader"].Value;
+            var firstResponse3 = await httpClient.GetAsync("https://api.github.com/repos/ThirteenAG/Ultimate-ASI-Loader/releases/latest");
+            firstResponse3.EnsureSuccessStatusCode();
+            var firstResponseBody3 = await firstResponse3.Content.ReadAsStringAsync();
+            var latestual = JsonDocument.Parse(firstResponseBody3).RootElement.GetProperty("tag_name").GetString();
+            if (latestual != downloadedual)
+            {
+                Logger.Debug(" Latest UAL not matching to downloaded, downloading...");
+                Logger.Debug(" Latest is " + latestual);
+                var downloadUrl3 = JsonDocument.Parse(firstResponseBody3).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
+                GithubDownloader.Download(downloadUrl3!, "Files\\Shared", "Ultimate-ASI-Loader.zip");
+                ZipFile.ExtractToDirectory("Files\\Shared\\Ultimate-ASI-Loader.zip", "Files\\Shared\\", true);
+                File.Delete("Files\\Shared\\Ultimate-ASI-Loader.zip");
+                settings["ultimate-asi-loader"].Value = latestual;
+                configFile.Save(ConfigurationSaveMode.Modified);
+                ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
+                Logger.Debug(" Edited the value in the config.");
+
+            }
+            if (gfwlcheckbox.IsChecked == false)
+            {
+                if (File.Exists("Files\\Shared\\dinput8.dll"))
+                {
+                    File.Move("Files\\Shared\\dinput8.dll", "Files\\Shared\\xlive.dll", true);
+                }
+                if (File.Exists($"{directory}\\dinput8.dll"))
+                {
+                    File.Move($"{directory}\\dinput8.dll", $"{directory}\\xlive.dll", true);
+                }
+            }
+            else
+            {
+                if (File.Exists("Files\\Shared\\xlive.dll"))
+                {
+                    File.Move("Files\\Shared\\xlive.dll", "Files\\Shared\\dinput8.dll", true);
+                }
+                    if (File.Exists($"{directory}\\xlive.dll"))
+                {
+                    File.Move($"{directory}\\xlive.dll", $"{directory}\\dinput8.dll", true);
+                }
+            }
+
+            // shared files
+            foreach (var file in Directory.GetFiles("Files\\Shared"))
+            {
+                File.Copy(file, Path.Combine(directory, Path.GetFileName(file)), true);
+            }
+
+            // zolikapatch setup
+
+            File.Copy("Files\\ZolikaPatch\\ZolikaPatch.asi", $"{directory}\\ZolikaPatch.asi", true);
+
+            switch (ffixcheckbox.IsChecked, gfwlcheckbox.IsChecked)
+            {
+                case (true, true):
+                    {
+                        File.Copy("Files\\ZolikaPatch\\ZolikaPatch-FFix-GFWL.ini", $"{directory}\\ZolikaPatch.ini", true);
+                        break;
+                    }
+                case (false, true):
+                    {
+                        File.Copy("Files\\ZolikaPatch\\ZolikaPatch-NoFFix-GFWL.ini", $"{directory}\\ZolikaPatch.ini", true);
+                        break;
+                    }
+                case (true, false):
+                    {
+                        File.Copy("Files\\ZolikaPatch\\ZolikaPatch-FFix.ini", $"{directory}\\ZolikaPatch.ini", true);
+                        break;
+                    }
+                case (false, false):
+                    {
+                        File.Copy("Files\\ZolikaPatch\\ZolikaPatch-NoFFix.ini", $"{directory}\\ZolikaPatch.ini", true);
+                        break;
+                    }
+            }
+
+            if (patch8click.IsChecked == true)
+            {
+                File.Copy("Files\\1080\\GTAIV.exe", $"{directory}\\GTAIV.exe", true);
+            }
+            else
+            {
+                File.Copy("Files\\1070\\GTAIV.exe", $"{directory}\\GTAIV.exe", true);
+            }
+
+            // fusionfix
+            if (ffixcheckbox.IsChecked == true)
+            {
+                string downloadedff = settings["fusionfix"].Value;
+                var firstResponse = await httpClient.GetAsync("https://api.github.com/repos/ThirteenAG/GTAIV.EFLC.FusionFix/releases/latest");
+                firstResponse.EnsureSuccessStatusCode();
+                var firstResponseBody = await firstResponse.Content.ReadAsStringAsync();
+                var latestff = JsonDocument.Parse(firstResponseBody).RootElement.GetProperty("tag_name").GetString();
+                if (latestff != downloadedff)
+                {
+                    Logger.Debug(" Downloaded version of FusionFix doesn't match the latest version, downloading...");
+                    var downloadUrl = JsonDocument.Parse(firstResponseBody).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
+                    GithubDownloader.Download(downloadUrl!, "Files\\FusionFix","FusionFix.zip");
+                    ZipFile.ExtractToDirectory("Files\\FusionFix\\FusionFix.zip", "Files\\FusionFix\\", true);
+                    File.Delete("Files\\FusionFix\\dinput8.dll");
+                    File.Delete("Files\\FusionFix\\FusionFix.zip");
+                    File.Move("Files\\FusionFix\\plugins\\GTAIV.EFLC.FusionFix.asi", "Files\\FusionFix\\GTAIV.EFLC.FusionFix.asi", true);
+                    File.Move("Files\\FusionFix\\plugins\\GTAIV.EFLC.FusionFix.ini", "Files\\FusionFix\\GTAIV.EFLC.FusionFix.ini", true);
+                    Directory.Delete("Files\\FusionFix\\plugins");
+                    settings["fusionfix"].Value = latestff;
+                    configFile.Save(ConfigurationSaveMode.Modified);
+                    ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
+                    Logger.Debug(" Edited the value in the config.");
+                }
+                if (gfwlcheckbox.IsChecked == true)
+                {
+                    var firstResponse2 = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIV.EFLC.FusionFix-GFWL/releases/latest");
+                    firstResponse2.EnsureSuccessStatusCode();
+                    var firstResponseBody2 = await firstResponse2.Content.ReadAsStringAsync();
+                    var downloadUrl2 = JsonDocument.Parse(firstResponseBody2).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
+                    GithubDownloader.Download(downloadUrl2!, "Files\\FusionFix", "FusionFix-GFWL.zip");
+                    ZipFile.ExtractToDirectory("Files\\FusionFix\\FusionFix-GFWL.zip", "Files\\FusionFix", true);
+                    File.Delete("Files\\FusionFix\\FusionFix-GFWL.zip");
+                }
+                CopyFolder("Files\\FusionFix\\", $"{directory}");
+
+            }
+            downgradebtn.Content = "Downgrade";
+            downgradeOptionsPanel.IsEnabled = true;
+        }
+
+        private void redist_Click(object sender, RoutedEventArgs e)
+        {
+            backupbtn.IsEnabled = false;
+            redistbtn.Content = "Installing...";
+            Logger.Debug(" Installing redistributables...");
+            var vcredist = new Process
+            {
+                StartInfo =
+                {
+                  FileName = $"Files\\Redist\\vcredist_x86.exe",
+                  Arguments = "/Q"
+                }
             };
-            Process.Start(psi);
+            vcredist.Start();
+            Process.Start($"Files\\Redist\\gfwlivesetup.exe");
+            backupbtn.IsEnabled = true;
+            redistbtn.Content = "Reinstall redistributables";
         }
     }
 }

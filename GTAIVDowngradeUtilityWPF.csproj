@@ -22,6 +22,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Files\**" />
+    <EmbeddedResource Remove="Files\**" />
+    <None Remove="Files\**" />
+    <Page Remove="Files\**" />
+  </ItemGroup>
+
+  <ItemGroup>
 	<None Remove="Assets\about.png" />
 	<None Remove="Assets\ivlogo.png" />
 	<None Remove="ivlogo.ico" />
@@ -32,12 +39,10 @@
   </ItemGroup>
 
   <ItemGroup>
-	<PackageReference Include="ByteSize" Version="2.1.1" />
-	<PackageReference Include="MegaApiClient" Version="1.10.3" />
 	<PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.5" />
-	<PackageReference Include="NLog" Version="5.2.5" />
-	<PackageReference Include="SharpZipLib" Version="1.4.2" />
-	<PackageReference Include="System.Management" Version="7.0.2" />
+	<PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
+	<PackageReference Include="NLog" Version="5.2.8" />
+	<PackageReference Include="System.Management" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -58,10 +63,6 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Functions\" />
   </ItemGroup>
 
 </Project>
