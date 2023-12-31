@@ -28,12 +28,13 @@
                     <RadioButton Content="1.0.7.0" x:Name="patch7click" Click="version_Click"/>
                     <RadioButton Content="1.0.8.0" x:Name="patch8click" IsChecked="True" Margin="5,0,0,0" Click="version_Click"/>
                 </StackPanel>
-                <StackPanel Margin="0,5,0,0" Orientation="Horizontal" HorizontalAlignment="Center">
-                    <CheckBox Content="Downgrade radio" x:Name="radiocheckbox" IsChecked="True" Click="radio_Click" IsEnabled="False"/>
+                <StackPanel Margin="0,5,0,0" Orientation="Horizontal"  HorizontalAlignment="Center">
+                    <CheckBox Content="Full downgrade" x:Name="fullcheckbox" Margin="0,0,0,0" IsChecked="False" HorizontalAlignment="Center" Click="full_Click"/>
+                    <CheckBox Content="SecuROM Bypass" x:Name="securomcheckbox" Margin="5,0,0,0" IsChecked="False" HorizontalAlignment="Center" Click="securom_Click" IsEnabled="False"/>
+                    <CheckBox Content="Install ZolikaPatch" x:Name="zpatchcheckbox" Margin="5,0,0,0" IsChecked="True" HorizontalAlignment="Center" Click="zpatch_Click" IsEnabled="False"/>
                 </StackPanel>
-                <StackPanel Margin="0,5,0,0" Orientation="Horizontal" HorizontalAlignment="Center">
-                    <CheckBox Content="Install FusionFix" x:Name="ffixcheckbox"  Margin="2,0,0,0" IsChecked="True" Click="ffix_Click"/>
-                </StackPanel>
+                <CheckBox Content="Downgrade radio" x:Name="radiocheckbox" Margin="0,5,0,0" IsChecked="False" HorizontalAlignment="Center" Click="radio_Click" IsEnabled="False"/>
+                <CheckBox Content="Install FusionFix" x:Name="ffixcheckbox"  Margin="0,5,0,0" HorizontalAlignment="Center" IsChecked="True" Click="ffix_Click"/>
                 <CheckBox Content="Make GFWL-compatible" x:Name="gfwlcheckbox" Margin="0,5,0,0" HorizontalAlignment="Center" IsChecked="False" Click="gfwl_Click"/>
                 <Button Content="Backup" x:Name="backupbtn" Margin="0,5,0,0" Width="160" Height="25" Click="backup_Click"/>
                 <Button Content="Install redistributables" x:Name="redistbtn" Margin="0,5,0,0" Width="160" Height="25" Click="redist_Click"/>
