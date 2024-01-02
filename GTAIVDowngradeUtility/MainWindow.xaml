@@ -18,7 +18,6 @@
                 <TextBox HorizontalAlignment="Left" x:Name="gamedirectory" Margin="0,2,0,0" VerticalAlignment="Top" Width="354" IsEnabled="False"/>
                 <Button Content="Open..." HorizontalAlignment="Left" Margin="5,0,0,0" VerticalAlignment="Top" Width="60" Click="Button_Click"/>
             </StackPanel>
-            <Button Content="Switch to Steam Depot Downgrader mode" x:Name="steamdepotbtn" Margin="0,5,0,0" Width="419" Click="steamdepot_Click" IsEnabled="false"/>
             <StackPanel Margin="0,5,0,0" Orientation="Horizontal" HorizontalAlignment="Center">
                 <TextBlock Margin="0,0,0,0" FontSize="12" TextWrapping="Wrap" HorizontalAlignment="Center">Keep the options at default values unless you know what you're doing.</TextBlock>
                 <CheckBox x:Name="tipscheck" Margin="5,0,0,0" IsChecked="True" HorizontalAlignment="Right">Tips</CheckBox>
@@ -30,12 +29,15 @@
                 </StackPanel>
                 <StackPanel Margin="0,5,0,0" Orientation="Horizontal"  HorizontalAlignment="Center">
                     <CheckBox Content="Full downgrade" x:Name="fullcheckbox" Margin="0,0,0,0" IsChecked="False" HorizontalAlignment="Center" Click="full_Click"/>
-                    <CheckBox Content="SecuROM Bypass" x:Name="securomcheckbox" Margin="5,0,0,0" IsChecked="False" HorizontalAlignment="Center" Click="securom_Click" IsEnabled="False"/>
                     <CheckBox Content="Install ZolikaPatch" x:Name="zpatchcheckbox" Margin="5,0,0,0" IsChecked="True" HorizontalAlignment="Center" Click="zpatch_Click" IsEnabled="False"/>
                 </StackPanel>
-                <CheckBox Content="Downgrade radio" x:Name="radiocheckbox" Margin="0,5,0,0" IsChecked="False" HorizontalAlignment="Center" Click="radio_Click" IsEnabled="False"/>
+                <CheckBox Content="Downgrade radio" x:Name="radiocheckbox" Margin="0,5,0,0" IsChecked="False" HorizontalAlignment="Center" Click="radio_Click"/>
+                <CheckBox Content="Steam Achievements" x:Name="achievementscheckbox"  Margin="0,5,0,0" HorizontalAlignment="Center" IsChecked="True" Click="steamchieves_Click"/>
                 <CheckBox Content="Install FusionFix" x:Name="ffixcheckbox"  Margin="0,5,0,0" HorizontalAlignment="Center" IsChecked="True" Click="ffix_Click"/>
-                <CheckBox Content="Make GFWL-compatible" x:Name="gfwlcheckbox" Margin="0,5,0,0" HorizontalAlignment="Center" IsChecked="False" Click="gfwl_Click"/>
+                <StackPanel Margin="0,5,0,0" Orientation="Horizontal"  HorizontalAlignment="Center">
+                    <CheckBox Content="Make GFWL-compatible" x:Name="gfwlcheckbox" Margin="0,0,0,0" HorizontalAlignment="Center" IsChecked="True" Click="gfwl_Click"/>
+                    <CheckBox Content="XLivelessAddon" x:Name="xlivelesscheckbox" Margin="5,0,0,0" HorizontalAlignment="Center" IsChecked="False" IsEnabled="False" Click="xliveless_Click"/>
+                </StackPanel>
                 <Button Content="Backup" x:Name="backupbtn" Margin="0,5,0,0" Width="160" Height="25" Click="backup_Click"/>
                 <Button Content="Install redistributables" x:Name="redistbtn" Margin="0,5,0,0" Width="160" Height="25" Click="redist_Click"/>
                 <Button Content="Downgrade" x:Name="downgradebtn" Margin="0,5,0,0" Width="160" Height="25" Click="downgrade_Click"/>

@@ -1,6 +1,5 @@
 using GTAIVDowngradeUtilityWPF.Common;
 using GTAIVDowngradeUtilityWPF.Functions;
-using GTAIVDowngradeUtilityWPF.GTAIVDowngradeUtility;
 using GTAIVSetupUtilityWPF.Functions;
 using Microsoft.VisualBasic.FileIO;
 using Microsoft.WindowsAPICodePack.Dialogs;
@@ -98,13 +97,6 @@ namespace GTAIVDowngradeUtilityWPF
             return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString()
                 ?? String.Empty;
         }
-
-        private void steamdepot_Click(object sender, RoutedEventArgs e)
-        {
-            Logger.Debug(" User switched to steam depot downgrading.");
-            DepotDownloaderWindow window2 = new DepotDownloaderWindow();
-            window2.Show();
-        }
         private void version_Click(object sender, RoutedEventArgs e)
         {
             Logger.Debug(" User toggled game version.");
@@ -120,14 +112,10 @@ namespace GTAIVDowngradeUtilityWPF
         {
             if (fullcheckbox.IsChecked == true)
             {
-                securomcheckbox.IsChecked = true;
-                securomcheckbox.IsEnabled = true;
                 zpatchcheckbox.IsEnabled = true;
             }
             else
             {
-                securomcheckbox.IsChecked = false;
-                securomcheckbox.IsEnabled = false;
                 zpatchcheckbox.IsEnabled = false;
                 zpatchcheckbox.IsChecked = true;
             }
@@ -136,33 +124,31 @@ namespace GTAIVDowngradeUtilityWPF
             {
                 Logger.Debug(" Displaying a tip...");
 
-                MessageBox.Show($"This option will download and unpack extra files to match the old version files.");
-            }
-        }
-        private void securom_Click(object sender, RoutedEventArgs e)
-        {
-            Logger.Debug(" User toggled securom bypass.");
-            if (tipscheck.IsChecked == true)
-            {
-                Logger.Debug(" Displaying a tip...");
-
-                MessageBox.Show($"This option will install the SecuROM bypass by Razor1911. Only needed when performing a full downgrade.\n\nDo not disable unless you have a SecuROM key or a way to get one.");
+                MessageBox.Show($"This option will download and unpack extra files to match the old version files (almost) entirely.\n\nThe reason I don't do that from the start is to save space, and because it's really unnecessary to have the whole thing.");
             }
         }
 
         private void zpatch_Click(object sender, RoutedEventArgs e)
         {
             Logger.Debug(" User toggled ZolikaPatch.");
+            if (zpatchcheckbox.IsChecked == false)
+            {
+                radiocheckbox.IsChecked = true;
+            }
             if (tipscheck.IsChecked == true)
             {
                 Logger.Debug(" Displaying a tip...");
 
-                MessageBox.Show($"This option allows to disable installing ZolikaPatch. Only needed when performing a full downgrade.\n\nKeep in mind that the DLC's (The Lost and Damned & The Ballad of Gay Tony) are not accessible without ZolikaPatch. You will also be missing a lot of quality of life improvements.");
+                MessageBox.Show($"This option allows to disable installing ZolikaPatch. Only needed when performing a full downgrade.\n\nKeep in mind that the DLC's (The Lost and Damned & The Ballad of Gay Tony) are not accessible without ZolikaPatch. You will also be missing a lot of quality of life improvements.\n\nDue to issues of running a downgraded copy without ZolikaPatch, radio downgrade is enforced with ZPatch off.");
             }
         }
         private void radio_Click(object sender, RoutedEventArgs e)
         {
             Logger.Debug(" User toggled radio downgrading.");
+            if (radiocheckbox.IsChecked == false)
+            {
+                zpatchcheckbox.IsChecked = true;
+            }
             if (tipscheck.IsChecked == true)
             {
                 Logger.Debug(" Displaying a tip...");
@@ -172,6 +158,10 @@ namespace GTAIVDowngradeUtilityWPF
         }
         private void ffix_Click(object sender, RoutedEventArgs e)
         {
+            if (ffixcheckbox.IsChecked == true && gfwlcheckbox.IsChecked == false && xlivelesscheckbox.IsChecked == false && zpatchcheckbox.IsChecked == false)
+            {
+                MessageBox.Show("It's recommended to at least enable XLiveless Addon when using FusionFix in compatibility mode.");
+            }
             if (tipscheck.IsChecked == true)
             {
                 Logger.Debug(" Displaying a tip...");
@@ -181,18 +171,56 @@ namespace GTAIVDowngradeUtilityWPF
         private void gfwl_Click(object sender, RoutedEventArgs e)
         {
             Logger.Debug(" User toggled GFWL.");
+            if (gfwlcheckbox.IsChecked == false)
+            {
+                xlivelesscheckbox.IsEnabled = true;
+            }
+            else
+            {
+                xlivelesscheckbox.IsEnabled = false;
+                xlivelesscheckbox.IsChecked = false;
+            }
             if (tipscheck.IsChecked == true)
             {
                 Logger.Debug(" Displaying a tip...");
-                MessageBox.Show("This option will attempt to ensure GFWL compatibility by installing the GFWL redists and ensuring there is no xlive.dll in the folder.\n\nThis tool does not guarantee 100% compatibility, however.");
+                MessageBox.Show("This option will attempt to ensure GFWL compatibility by installing the GFWL redists and ensuring there is no xlive.dll in the folder.\n\nThis tool does not guarantee 100% compatibility, however. Also it's highly recommended to install ZolikaPatch if enabling this.");
             }
         }
+        private void steamchieves_Click(object sender, RoutedEventArgs e)
+        {
+            Logger.Debug(" User toggled Steam Achievements.");
+            if (tipscheck.IsChecked == true)
+            {
+                Logger.Debug(" Displaying a tip...");
+                MessageBox.Show("This option allows to toggle steam achievements - however, that also disables GFWL achievements. It's either one or the other.");
+            }
+        }
+
+        private void xliveless_Click(object sender, RoutedEventArgs e)
+        {
+            Logger.Debug(" User toggled XLiveless Addon.");
+            if (xlivelesscheckbox.IsChecked == true)
+            {
+                gfwlcheckbox.IsChecked = false;
+                gfwlcheckbox.IsEnabled = false;
+            }
+            else
+            {
+                gfwlcheckbox.IsEnabled = true;
+            }
+            if (tipscheck.IsChecked == true)
+            {
+                Logger.Debug(" Displaying a tip...");
+                MessageBox.Show("This option adds a few additions to xliveless.\n\nOnly available if not setting up for GFWL.");
+            }
+        }
+
 
         private void aboutButton_Click(object sender, RoutedEventArgs e)
         {
             Logger.Debug(" User opened the About window.");
             MessageBox.Show(
-                "This software is made by Gillian for the RevIVal Community. Below is debug text, you don't need it normally.\n\n" +
+                "This software is made by Gillian for the RevIVal Community and the Modding Guide.\n\n" +
                 $"Version: {GetAssemblyVersion()}",
                 "Information");
         }
@@ -201,7 +229,6 @@ namespace GTAIVDowngradeUtilityWPF
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             Logger.Debug(" User is selecting the game folder...");
-            steamdepotbtn.IsEnabled = false;
             while (true)
             {
                 CommonOpenFileDialog dialog = new CommonOpenFileDialog();
@@ -218,8 +245,6 @@ namespace GTAIVDowngradeUtilityWPF
                             MessageBox.Show("Your game exe is already downgraded, proceeding to use the tool may produce unexpected results and corrupt the game.");
                         }
                         else { Logger.Debug(" Folder contains an exe of Steam Version."); }
-
-                        if (dialog.FileName.Contains("Steam")){ } // TODO: Add steamdepotbtn.IsEnabled = true; in here when the page is functional
 
                         if (Directory.Exists($"{dialog.FileName}\\backup")) { backupexists = true; }
 
@@ -265,7 +290,79 @@ namespace GTAIVDowngradeUtilityWPF
                     BackupGame.Backup(directory, backupexists);
                 }
             }
-            // http client for downloading fusionfix and asi loader
+
+            if (radiocheckbox.IsChecked == true)
+            {
+                if (ffixcheckbox.IsChecked == true && !File.Exists($"{directory}\\update\\pc\\audio\\sfx\\radio_ny_classics.rpf"))
+                {
+                    MessageBoxResult result = MessageBox.Show("You chose to downgrade radio, but you don't have any downgrader downloaded.\n\nDo you wish to download one now? (you will be sent to download a downgrader that matches your options; selecting no will cancel downgrading)", "No radio downgrader found", MessageBoxButton.YesNo);
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        ProcessStartInfo psi = new ProcessStartInfo
+                        {
+                            FileName = "cmd",
+                            Arguments = $"/c start {"http://downgraders.rockstarvision.com/"}",
+                            CreateNoWindow = true,
+                            UseShellExecute = false,
+                        };
+                        Process.Start(psi);
+                        while (true)
+                        {
+                            MessageBoxResult result2 = MessageBox.Show("Press 'Yes' after installing the downgrader (at the bottom of the page).\n\nPress 'No' to cancel downgrading.", "No radio downgrader found", MessageBoxButton.YesNo);
+                            if (result2 == MessageBoxResult.Yes)
+                            {
+                                if (!File.Exists($"{directory}\\update\\pc\\audio\\sfx\\radio_ny_classics.rpf"))
+                                {
+                                    MessageBox.Show("Radio downgrader not detected in the game folder. Try again.");
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                return;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
+                else if (ffixcheckbox.IsChecked == false && !Directory.Exists("Files\\RadioDowngrade"))
+                {
+                    ProcessStartInfo psi = new ProcessStartInfo
+                    {
+                        FileName = "cmd",
+                        Arguments = $"/c start {"https://drive.google.com/file/d/1ueWSvdLId9exw89dcTCM3PWoaiVCdIIg/view?usp=sharing"}",
+                        CreateNoWindow = true,
+                        UseShellExecute = false,
+                    };
+                    Process.Start(psi);
+                    while (true)
+                    {
+                        MessageBoxResult result2 = MessageBox.Show("Press 'Yes' after downloading the .\n\nThe folder should only have 'common' and 'pc' folders.\n\nPress 'No' to cancel downgrading.", "No radio downgrader found", MessageBoxButton.YesNo);
+                        if (result2 == MessageBoxResult.Yes)
+                        {
+                            if (!Directory.Exists("Files\\RadioDowngrade\\pc") && (!Directory.Exists("Files\\RadioDowngrade\\common")))
+                            {
+                                MessageBox.Show("Radio downgrader not detected in the downgrader's Files folder. Try again.");
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+                }
+            }
+            // http client for downloading various mods
             var httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.Add("User-Agent", "Other");
 
@@ -285,67 +382,75 @@ namespace GTAIVDowngradeUtilityWPF
             }
 
             // actually downgrading now
+            var configFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            var settings = configFile.AppSettings.Settings;
             if (!Directory.Exists("Files\\Shared"))
             {
                 Directory.CreateDirectory("Files\\Shared");
             }
 
             // ultimate asi loader
-            Logger.Info(" Installing Ultimate ASI Loader...");
-            var configFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            var settings = configFile.AppSettings.Settings;
-            string downloadedual = settings["ultimate-asi-loader"].Value;
-            if (!File.Exists("Files\\Shared\\dinput8.dll") || !File.Exists("Files\\Shared\\dinput8.dll"))
+            if (zpatchcheckbox.IsChecked == true || ffixcheckbox.IsChecked == true || achievementscheckbox.IsChecked == true || gfwlcheckbox.IsChecked == true || xlivelesscheckbox.IsChecked == true)
             {
-                settings["ultimate-asi-loader"].Value = "";
-                configFile.Save(ConfigurationSaveMode.Modified);
-                ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
-                Logger.Debug(" Ultimate ASI Loader not downloaded - changed the value of downloaded ual to null.");
-            }
-            var firstResponseual = await httpClient.GetAsync("https://api.github.com/repos/ThirteenAG/Ultimate-ASI-Loader/releases/latest");
-            firstResponseual.EnsureSuccessStatusCode();
-            var firstResponseBodyual = await firstResponseual.Content.ReadAsStringAsync();
-            var latestual = JsonDocument.Parse(firstResponseBodyual).RootElement.GetProperty("tag_name").GetString();
-            if (latestual != downloadedual)
-            {
-                Logger.Debug(" Latest UAL not matching to downloaded, downloading...");
-                var downloadUrlual = JsonDocument.Parse(firstResponseBodyual).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
-                GithubDownloader.Download(downloadUrlual!, "Files\\Shared", "Ultimate-ASI-Loader.zip");
-                ZipFile.ExtractToDirectory("Files\\Shared\\Ultimate-ASI-Loader.zip", "Files\\Shared\\", true);
-                File.Delete("Files\\Shared\\Ultimate-ASI-Loader.zip");
-                settings["ultimate-asi-loader"].Value = latestual;
-                configFile.Save(ConfigurationSaveMode.Modified);
-                ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
-                Logger.Debug(" Edited the value in the config.");
+                Logger.Info(" Installing Ultimate ASI Loader (won't be installed if no asi's are selected)...");
+                string downloadedual = settings["ultimate-asi-loader"].Value;
+                if (!File.Exists("Files\\Shared\\dinput8.dll") || !File.Exists("Files\\Shared\\dinput8.dll"))
+                {
+                    settings["ultimate-asi-loader"].Value = "";
+                    configFile.Save(ConfigurationSaveMode.Modified);
+                    ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
+                    Logger.Debug(" Ultimate ASI Loader not downloaded - changed the value of downloaded ual to null.");
+                }
+                var firstResponseual = await httpClient.GetAsync("https://api.github.com/repos/ThirteenAG/Ultimate-ASI-Loader/releases/latest");
+                firstResponseual.EnsureSuccessStatusCode();
+                var firstResponseBodyual = await firstResponseual.Content.ReadAsStringAsync();
+                var latestual = JsonDocument.Parse(firstResponseBodyual).RootElement.GetProperty("tag_name").GetString();
+                if (latestual != downloadedual)
+                {
+                    Logger.Debug(" Latest UAL not matching to downloaded, downloading...");
+                    var downloadUrlual = JsonDocument.Parse(firstResponseBodyual).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
+                    GithubDownloader.Download(downloadUrlual!, "Files\\Shared", "Ultimate-ASI-Loader.zip");
+                    ZipFile.ExtractToDirectory("Files\\Shared\\Ultimate-ASI-Loader.zip", "Files\\Shared\\", true);
+                    File.Delete("Files\\Shared\\Ultimate-ASI-Loader.zip");
+                    settings["ultimate-asi-loader"].Value = latestual;
+                    configFile.Save(ConfigurationSaveMode.Modified);
+                    ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
+                    Logger.Debug(" Edited the value in the config.");
 
-            }
-            Logger.Debug(" Renaming unmatching UAL names if exist...");
-            if (gfwlcheckbox.IsChecked == false)
-            {
-                if (File.Exists("Files\\Shared\\dinput8.dll"))
-                {
-                    File.Move("Files\\Shared\\dinput8.dll", "Files\\Shared\\xlive.dll", true);
                 }
-                if (File.Exists($"{directory}\\dinput8.dll"))
+                Logger.Debug(" Renaming unmatching UAL names if exist...");
+                if (gfwlcheckbox.IsChecked == false)
                 {
-                    File.Move($"{directory}\\dinput8.dll", $"{directory}\\xlive.dll", true);
+                    if (File.Exists("Files\\Shared\\dinput8.dll"))
+                    {
+                        File.Move("Files\\Shared\\dinput8.dll", "Files\\Shared\\xlive.dll", true);
+                    }
+                    if (File.Exists($"{directory}\\dinput8.dll"))
+                    {
+                        File.Move($"{directory}\\dinput8.dll", $"{directory}\\xlive.dll", true);
+                    }
+                    if (xlivelesscheckbox.IsChecked == true)
+                    {
+                        CopyFolder("Files\\XLivelessAddon", directory);
+                    }
                 }
-            }
-            else
-            {
-                if (File.Exists("Files\\Shared\\xlive.dll"))
+                else
                 {
-                    File.Move("Files\\Shared\\xlive.dll", "Files\\Shared\\dinput8.dll", true);
+                    File.Copy("Files\\ZolikaPatch\\GFWLProtectionDisabler2019.asi", $"{directory}\\GFWLProtectionDisabler2019.asi", true);
+                    if (File.Exists("Files\\Shared\\xlive.dll"))
+                    {
+                        File.Move("Files\\Shared\\xlive.dll", "Files\\Shared\\dinput8.dll", true);
+                    }
+                        if (File.Exists($"{directory}\\xlive.dll"))
+                    {
+                        File.Move($"{directory}\\xlive.dll", $"{directory}\\dinput8.dll", true);
+                    }
                 }
-                    if (File.Exists($"{directory}\\xlive.dll"))
+                if (File.Exists($"{directory}\\dsound.dll"))
                 {
-                    File.Move($"{directory}\\xlive.dll", $"{directory}\\dinput8.dll", true);
+                    Logger.Debug(" Removing dsound.dll from the game folder to avoid incompatibility.");
+                    File.Delete($"{directory}\\dsound.dll");
                 }
-            }
-            if (File.Exists($"{directory}\\dsound.dll"))
-            {
-                Logger.Debug(" Removing dsound.dll from the game folder to avoid incompatibility");
-                File.Delete($"{directory}\\dsound.dll");
             }
 
             // shared files
@@ -362,10 +467,8 @@ namespace GTAIVDowngradeUtilityWPF
             }
 
             Logger.Info(" Copying shared files...");
-            foreach (var file in Directory.GetFiles("Files\\Shared"))
-            {
-                File.Copy(file, Path.Combine(directory, Path.GetFileName(file)), true);
-            }
+            CopyFolder("Files\\Shared", directory);
+
             // full files
             if (fullcheckbox.IsChecked == true)
             {
@@ -399,20 +502,12 @@ namespace GTAIVDowngradeUtilityWPF
                     }
                     CopyFolder("Files\\1070FullFiles", directory);
                 }
-                if (securomcheckbox.IsChecked == true)
-                {
-                    if (!Directory.Exists("Files\\SecuROMBypass"))
-                    {
-                        Directory.CreateDirectory("Files\\SecuROMBypass");
-                        var firstResponsesecurom = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIVFullDowngradeAssets/releases/assets/143177187");
-                        firstResponsesecurom.EnsureSuccessStatusCode();
-                        var firstResponseBodysecurom = await firstResponsesecurom.Content.ReadAsStringAsync();
-                        var downloadUrlsecurom = JsonDocument.Parse(firstResponseBodysecurom).RootElement.GetProperty("browser_download_url").GetString();
-                        GithubDownloader.Download(downloadUrlsecurom!, "Files\\SecuROMBypass", "SecuROMBypass.zip");
-                        ZipFile.ExtractToDirectory("Files\\SecuROMBypass\\SecuROMBypass.zip", "Files", true);
-                        File.Delete("Files\\SecuROMBypass\\SecuROMBypass.zip");
-                    }
-                }
+            }
+
+            // steam achievements
+            if (achievementscheckbox.IsChecked == true)
+            {
+                File.Copy("Files\\ZolikaPatch\\SteamAchievements.asi", $"{directory}\\SteamAchievements.asi", true);
             }
 
             // zolikapatch setup
