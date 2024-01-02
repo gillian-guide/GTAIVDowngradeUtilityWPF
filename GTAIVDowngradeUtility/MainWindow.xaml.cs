@@ -436,7 +436,6 @@ namespace GTAIVDowngradeUtilityWPF
                 }
                 else
                 {
-                    File.Copy("Files\\ZolikaPatch\\GFWLProtectionDisabler2019.asi", $"{directory}\\GFWLProtectionDisabler2019.asi", true);
                     if (File.Exists("Files\\Shared\\xlive.dll"))
                     {
                         File.Move("Files\\Shared\\xlive.dll", "Files\\Shared\\dinput8.dll", true);
@@ -468,6 +467,12 @@ namespace GTAIVDowngradeUtilityWPF
 
             Logger.Info(" Copying shared files...");
             CopyFolder("Files\\Shared", directory);
+
+            // GFWL files
+            if (gfwlcheckbox.IsChecked == true)
+            {
+                CopyFolder("Files\\GFWL", directory);
+            }
 
             // full files
             if (fullcheckbox.IsChecked == true)
