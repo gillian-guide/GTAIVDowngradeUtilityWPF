@@ -18,11 +18,12 @@ Semi-automatically downgrades your GTA IV installation to 1.0.8.0 or 1.0.7.0.
 - Cleaning up the game folder from potentially incompatible things (`*.asi`, `dsound.dll`) before downgrading.
 - Taking the selected toggles in account to automatically adjust logic (aka, the tool *shouldn't* let you do incompatible selections)
 
-## Toggles that require downloading
+## Features that require downloading
 Downloads are a one-time only (unless an update is detected for UAL or FF)
 - Ultimate ASI Loader (if any `.asi` mods are selected, that being ZolikaPatch, Steam Achievements, FusionFix or XLivelessAddon).
 - Downgrade radio.
 - Install FusionFix.
+- Install Redistributables.
 
 ## Contribution
 Contribution is highly welcome. I'm poorly experienced with C#, so the current code is extremely clunky and works out of prayers. There's also far too many checks that I have no desire to optimize.
