@@ -331,28 +331,51 @@ namespace GTAIVDowngradeUtilityWPF
                         return;
                     }
                 }
-                else if (ffixcheckbox.IsChecked == false && !Directory.Exists("Files\\RadioDowngrade"))
+                else if (ffixcheckbox.IsChecked == false && !File.Exists("Files\\RadioDowngrade\\install.bat"))
                 {
                     ProcessStartInfo psi = new ProcessStartInfo
                     {
                         FileName = "cmd",
-                        Arguments = $"/c start {"https://drive.google.com/file/d/1ueWSvdLId9exw89dcTCM3PWoaiVCdIIg/view?usp=sharing"}",
+                        Arguments = $"/c start {"https://mega.nz/folder/Fn0Q3LhY#_0t1VZQFuQX22lMxRZNB1A/file/cnsk2bgb"}",
                         CreateNoWindow = true,
                         UseShellExecute = false,
                     };
                     Process.Start(psi);
+                    MessageBoxResult resultv = MessageBox.Show("Press 'Yes' if you want the new Vladivostok songs mixed in with the old ones. Press 'No' to only have the old Vladivostok songs.", "No radio downgrader found", MessageBoxButton.YesNo);
+                    if (resultv == MessageBoxResult.Yes)
+                    {
+                        ProcessStartInfo psi2 = new ProcessStartInfo
+                        {
+                            FileName = "cmd",
+                            Arguments = $"/c start {"https://mega.nz/folder/Fn0Q3LhY#_0t1VZQFuQX22lMxRZNB1A/file/kvkmlRRY"}",
+                            CreateNoWindow = true,
+                            UseShellExecute = false,
+                        };
+                        Process.Start(psi2);
+                    }
+                    else
+                    {
+                        ProcessStartInfo psi2 = new ProcessStartInfo
+                        {
+                            FileName = "cmd",
+                            Arguments = $"/c start {"https://mega.nz/folder/Fn0Q3LhY#_0t1VZQFuQX22lMxRZNB1A/file/hj8WGZIT"}",
+                            CreateNoWindow = true,
+                            UseShellExecute = false,
+                        };
+                        Process.Start(psi2);
+                    }
                     while (true)
                     {
-                        MessageBoxResult result2 = MessageBox.Show("Press 'Yes' after downloading the .\n\nThe folder should only have 'common' and 'pc' folders.\n\nPress 'No' to cancel downgrading.", "No radio downgrader found", MessageBoxButton.YesNo);
+                        MessageBoxResult result2 = MessageBox.Show("Press 'Yes' after downloading both archives (the ones you need are highlighted) and extracting them to 'Files\\RadioDowngrade'.\n\nThe folder should have 'common', 'pc', 'tlad', 'tbogt' folders and an 'install.bat'.\n\nPress 'No' to cancel downgrading.", "No radio downgrader found", MessageBoxButton.YesNo);
                         if (result2 == MessageBoxResult.Yes)
                         {
-                            if (!Directory.Exists("Files\\RadioDowngrade\\pc") && (!Directory.Exists("Files\\RadioDowngrade\\common")))
+                            if (!File.Exists("Files\\RadioDowngrade\\install.bat") || !File.Exists("Files\\RadioDowngrade\\jptch.exe") || !Directory.Exists("Files\\RadioDowngrade\\pc") || (!Directory.Exists("Files\\RadioDowngrade\\common")) || !Directory.Exists("Files\\RadioDowngrade\\tlad") || !Directory.Exists("Files\\RadioDowngrade\\tbogt"))
                             {
                                 MessageBox.Show("Radio downgrader not detected in the downgrader's Files folder. Try again.");
                             }
                             else
                             {
-                                break;
+                                return;
                             }
                         }
                         else
@@ -360,6 +383,11 @@ namespace GTAIVDowngradeUtilityWPF
                             return;
                         }
                     }
+                }
+                else if (ffixcheckbox.IsChecked == false && File.Exists("Files\\RadioDowngrade\\install.bat"))
+                {
+                    CopyFolder("Files\\RadioDowngrade", directory);
+                    Process.Start($"{directory}\\install.bat");
                 }
             }
             // http client for downloading various mods
