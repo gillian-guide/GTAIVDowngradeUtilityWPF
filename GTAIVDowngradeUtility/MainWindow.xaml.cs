@@ -387,7 +387,12 @@ namespace GTAIVDowngradeUtilityWPF
                 else if (ffixcheckbox.IsChecked == false && File.Exists("Files\\RadioDowngrade\\install.bat"))
                 {
                     CopyFolder("Files\\RadioDowngrade", directory);
-                    Process.Start($"{directory}\\install.bat");
+                    ProcessStartInfo psirad = new ProcessStartInfo
+                    {
+                        FileName = $"{directory}\\install.bat",
+                        WorkingDirectory = directory
+                    };
+                    Process.Start(psirad);
                 }
             }
             // http client for downloading various mods
@@ -481,7 +486,7 @@ namespace GTAIVDowngradeUtilityWPF
             }
 
             // shared files
-            if (!File.Exists("Files\\Shared\\DFA.dll"))
+            if (!File.Exists("Files\\Shared\\play.dll"))
             {
                 Logger.Info(" Downloading shared files...");
                 var firstResponseshared = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIVFullDowngradeAssets/releases/135442404");
