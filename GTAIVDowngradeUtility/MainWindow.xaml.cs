@@ -1,24 +1,16 @@
 using GTAIVDowngradeUtilityWPF.Common;
 using GTAIVDowngradeUtilityWPF.Functions;
 using GTAIVSetupUtilityWPF.Functions;
-using Microsoft.VisualBasic.FileIO;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using NLog;
 using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
-using System.Management;
 using System.Net.Http;
-using System.Reflection;
 using System.Text.Json;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Input;
 
 // hi here, i'm an awful coder, so please clean up for me if it really bothers you
 
