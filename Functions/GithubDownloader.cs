@@ -13,12 +13,12 @@ namespace GTAIVSetupUtilityWPF.Functions
         {
             try
             {
-                Logger.Debug("Downloading the selected release...");
+                Logger.Debug(" Downloading the selected release...");
                 using (WebClient client = new WebClient())
                 {
                     client.DownloadFile(downloadUrl, Path.Combine(destination, downloadedName));
                 }
-                Logger.Debug("Successfully downloaded.");
+                Logger.Debug(" Successfully downloaded.");
             }
             catch (Exception ex)
             {
