@@ -629,6 +629,7 @@ namespace GTAIVDowngradeUtilityWPF
                     CopyFolder("Files\\FusionFix\\", $"{directory}");
                 }
 
+
             }
             Logger.Info(" Successfully downgraded!");
             MessageBox.Show("Your game has been downgraded in accordance with selected options!");
