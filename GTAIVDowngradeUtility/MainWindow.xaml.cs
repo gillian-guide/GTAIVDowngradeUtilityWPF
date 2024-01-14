@@ -616,15 +616,18 @@ namespace GTAIVDowngradeUtilityWPF
                     ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
                     Logger.Debug(" Edited the value in the config.");
                 }
-                Logger.Info(" Downloading the GFWL Patch for FusionFix...");
-                var firstResponse2 = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIV.EFLC.FusionFix-GFWL/releases/latest");
-                firstResponse2.EnsureSuccessStatusCode();
-                var firstResponseBody2 = await firstResponse2.Content.ReadAsStringAsync();
-                var downloadUrl2 = JsonDocument.Parse(firstResponseBody2).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
-                GithubDownloader.Download(downloadUrl2!, "Files\\FusionFix", "FusionFix-GFWL.zip");
-                ZipFile.ExtractToDirectory("Files\\FusionFix\\FusionFix-GFWL.zip", "Files\\FusionFix", true);
-                File.Delete("Files\\FusionFix\\FusionFix-GFWL.zip");
-                CopyFolder("Files\\FusionFix\\", $"{directory}");
+                if (gfwlcheckbox.IsChecked == true)
+                {
+                    Logger.Info(" Downloading the GFWL Patch for FusionFix...");
+                    var firstResponse2 = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIV.EFLC.FusionFix-GFWL/releases/latest");
+                    firstResponse2.EnsureSuccessStatusCode();
+                    var firstResponseBody2 = await firstResponse2.Content.ReadAsStringAsync();
+                    var downloadUrl2 = JsonDocument.Parse(firstResponseBody2).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
+                    GithubDownloader.Download(downloadUrl2!, "Files\\FusionFix", "FusionFix-GFWL.zip");
+                    ZipFile.ExtractToDirectory("Files\\FusionFix\\FusionFix-GFWL.zip", "Files\\FusionFix", true);
+                    File.Delete("Files\\FusionFix\\FusionFix-GFWL.zip");
+                    CopyFolder("Files\\FusionFix\\", $"{directory}");
+                }
 
             }
             Logger.Info(" Successfully downgraded!");
