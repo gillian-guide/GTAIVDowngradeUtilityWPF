@@ -178,6 +178,16 @@ namespace GTAIVDowngradeUtilityWPF
                 MessageBox.Show("This option will attempt to ensure GFWL compatibility by installing the GFWL redists and ensuring there is no xlive.dll in the folder.\n\nThis tool does not guarantee 100% compatibility, however. Also it's highly recommended to install ZolikaPatch if enabling this.");
             }
         }
+
+        private void gfwlportable_Click(object sender, RoutedEventArgs e)
+        {
+            Logger.Debug(" User toggled Portable GFWL");
+            if (tipscheck.IsChecked == true)
+            {
+                Logger.Debug(" Displaying a tip...");
+                MessageBox.Show("This option will add portable GFWL files, removing the necessity to install GFWL Redistributables.");
+            }
+        }
         private void steamchieves_Click(object sender, RoutedEventArgs e)
         {
             Logger.Debug(" User toggled Steam Achievements.");
@@ -497,6 +507,10 @@ namespace GTAIVDowngradeUtilityWPF
             if (gfwlcheckbox.IsChecked == true)
             {
                 CopyFolder("Files\\GFWL", directory);
+                if (gfwlportablecheckbox.IsChecked == true)
+                {
+                    CopyFolder("Files\\PortableGFWL", directory);
+                }
             }
 
             // full files
@@ -648,37 +662,68 @@ namespace GTAIVDowngradeUtilityWPF
             var firstResponseredist = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIVFullDowngradeAssets/releases/latest");
             firstResponseredist.EnsureSuccessStatusCode();
             var firstResponseBodyredist = await firstResponseredist.Content.ReadAsStringAsync();
-            if (!Directory.Exists("Files\\Redist"))
-            {
-                Directory.CreateDirectory("Files\\Redist");
-                Logger.Info(" Downloading redistributables...");
-                var downloadUrlredist = JsonDocument.Parse(firstResponseBodyredist).RootElement.GetProperty("assets")[1].GetProperty("browser_download_url").GetString();
-                GithubDownloader.Download(downloadUrlredist!, "Files", "Redist.zip");
-                ZipFile.ExtractToDirectory("Files\\Redist\\Redist.zip", "Files", true);
-                File.Delete("Files\\Redist\\Redist.zip");
-            }
-
             Logger.Debug(" Installing redistributables...");
-            var vcredist = new Process
+            if (gfwlportablecheckbox.IsChecked == false)
             {
-                StartInfo =
+                if (!Directory.Exists("Files\\Redist"))
                 {
-                  FileName = $"Files\\Redist\\vcredist_x86.exe",
-                  Arguments = "/Q"
+                    Directory.CreateDirectory("Files\\Redist");
+                    Logger.Info(" Downloading redistributables...");
+                    var downloadUrlredist = JsonDocument.Parse(firstResponseBodyredist).RootElement.GetProperty("assets")[1].GetProperty("browser_download_url").GetString();
+                    GithubDownloader.Download(downloadUrlredist!, "Files", "Redist.zip");
+                    ZipFile.ExtractToDirectory("Files\\Redist\\Redist.zip", "Files", true);
+                    File.Delete("Files\\Redist\\Redist.zip");
                 }
-            };
-            vcredist.Start();
-            var directx = new Process
+
+                var vcredist = new Process
+                {
+                    StartInfo =
+                    {
+                      FileName = $"Files\\Redist\\vcredist_x86.exe",
+                      Arguments = "/Q"
+                    }
+                };
+                vcredist.Start();
+                Process.Start($"Files\\Redist\\gfwlivesetup.exe");
+            }
+            else
             {
-                StartInfo =
+                if (File.Exists($"{directory}\\Redistributables\\VCRed\\vcredist_x86.exe"))
                 {
-                  FileName = $"Files\\Redist\\directx_Jun2010_redist.exe",
-                  Arguments = "/Q"
+                    var vcredist = new Process
+                    {
+                        StartInfo =
+                    {
+                      FileName = $"{directory}\\Redistributables\\VCRed\\vcredist_x86.exe",
+                      Arguments = "/Q"
+                    }
+                    };
+                    vcredist.Start();
                 }
-            };
-            directx.Start();
-            Process.Start($"Files\\Redist\\gfwlivesetup.exe");
-            backupbtn.IsEnabled = true;
+                else
+                {
+                    if (!Directory.Exists("Files\\Redist"))
+                    {
+                        Directory.CreateDirectory("Files\\Redist");
+                        Logger.Info(" Downloading redistributables...");
+                        var downloadUrlredist = JsonDocument.Parse(firstResponseBodyredist).RootElement.GetProperty("assets")[1].GetProperty("browser_download_url").GetString();
+                        GithubDownloader.Download(downloadUrlredist!, "Files", "Redist.zip");
+                        ZipFile.ExtractToDirectory("Files\\Redist\\Redist.zip", "Files", true);
+                        File.Delete("Files\\Redist\\Redist.zip");
+                    }
+
+                    var vcredist = new Process
+                    {
+                        StartInfo =
+                    {
+                      FileName = $"Files\\Redist\\vcredist_x86.exe",
+                      Arguments = "/Q"
+                    }
+                    };
+                    vcredist.Start();
+                }
+            }
+            redistbtn.IsEnabled = true;
             redistbtn.Content = "Reinstall redistributables";
         }
     }

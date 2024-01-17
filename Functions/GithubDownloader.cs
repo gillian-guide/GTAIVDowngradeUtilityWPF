@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
 
@@ -8,7 +7,7 @@ namespace GTAIVSetupUtilityWPF.Functions
     public static class GithubDownloader
     {
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
-        
+
         public static void Download(string downloadUrl, string destination, string downloadedName)
         {
             try
