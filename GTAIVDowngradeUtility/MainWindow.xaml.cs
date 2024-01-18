@@ -166,11 +166,14 @@ namespace GTAIVDowngradeUtilityWPF
             if (gfwlcheckbox.IsChecked == false)
             {
                 xlivelesscheckbox.IsEnabled = true;
+                gfwlportablecheckbox.IsChecked = false;
+                gfwlportablecheckbox.IsEnabled = false;
             }
             else
             {
                 xlivelesscheckbox.IsEnabled = false;
-                xlivelesscheckbox.IsChecked = false;
+                gfwlportablecheckbox.IsEnabled = true;
+                gfwlportablecheckbox.IsChecked = true;
             }
             if (tipscheck.IsChecked == true)
             {
