@@ -197,7 +197,7 @@ namespace GTAIVDowngradeUtilityWPF
             if (tipscheck.IsChecked == true)
             {
                 Logger.Debug(" Displaying a tip...");
-                MessageBox.Show("This option allows to toggle steam achievements - however, that also disables GFWL achievements. It's either one or the other.");
+                MessageBox.Show("This option installs Zolika's Steam Achievements mod to be able to get Steam achievements on downgraded copies.\n\nMay not work with GFWL.");
             }
         }
 
@@ -227,8 +227,14 @@ namespace GTAIVDowngradeUtilityWPF
         private void aboutButton_Click(object sender, RoutedEventArgs e)
         {
             Logger.Debug(" User opened the About window.");
+            var configFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            var settings = configFile.AppSettings.Settings;
+            string fusionfix = settings["fusionfix"].Value;
+            string ual = settings["ultimate-asi-loader"].Value;
             MessageBox.Show(
                 "This software is made by Gillian for the RevIVal Community and the Modding Guide.\n\n" +
+                $"Downloaded Ultimate ASI Loader: {ual}\n" +
+                $"Downloaded FusionFix: {fusionfix}\n" +
                 $"Version: {GetAssemblyVersion()}",
                 "Information");
         }
@@ -256,10 +262,13 @@ namespace GTAIVDowngradeUtilityWPF
 
                         if (Directory.Exists($"{dialog.FileName}\\backup")) { backupexists = true; }
 
+                        if (dialog.FileName.Contains("Steam")) { achievementscheckbox.IsEnabled = true; achievementscheckbox.IsChecked = true; }
+
                         directorytxt.Text = "Game Directory:";
                         gamedirectory.Text = dialog.FileName;
                         directory = dialog.FileName;
-                        downgradeOptionsPanel.IsEnabled = true;
+                        options.IsEnabled = true;
+                        version.IsEnabled = true;
                         break;
                     }
 
@@ -286,7 +295,8 @@ namespace GTAIVDowngradeUtilityWPF
         }
         private async void downgrade_Click(object sender, RoutedEventArgs e)
         {
-            downgradeOptionsPanel.IsEnabled = false;
+            options.IsEnabled = false;
+            version.IsEnabled = false;
             downgradebtn.Content = "Downgrading...";
             Logger.Info(" Starting the downgrade...");
             if (backupexists == false)
@@ -654,7 +664,8 @@ namespace GTAIVDowngradeUtilityWPF
             Logger.Info(" Successfully downgraded!");
             MessageBox.Show("Your game has been downgraded in accordance with selected options!");
             downgradebtn.Content = "Downgrade";
-            downgradeOptionsPanel.IsEnabled = true;
+            options.IsEnabled = true;
+            version.IsEnabled = true;
         }
 
         private async void redist_Click(object sender, RoutedEventArgs e)

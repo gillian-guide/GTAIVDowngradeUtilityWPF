@@ -19,30 +19,32 @@
                 <Button Content="Open..." HorizontalAlignment="Left" Margin="5,0,0,0" VerticalAlignment="Top" Width="60" Click="Button_Click"/>
             </StackPanel>
             <StackPanel Margin="0,5,0,0" Orientation="Horizontal" HorizontalAlignment="Center">
-                <TextBlock Margin="0,0,0,0" FontSize="12" TextWrapping="Wrap" HorizontalAlignment="Center">Keep the options at default values unless you know what you're doing.</TextBlock>
+                <TextBlock FontSize="12" TextWrapping="Wrap" HorizontalAlignment="Center">Keep the options at default values unless you know what you're doing.</TextBlock>
                 <CheckBox x:Name="tipscheck" Margin="5,0,0,0" IsChecked="True" HorizontalAlignment="Right">Tips</CheckBox>
             </StackPanel>
-            <StackPanel x:Name="downgradeOptionsPanel" Margin="0,5,0,0" HorizontalAlignment="Center" IsEnabled="False">
-                <StackPanel Margin="0,0,0,0" Orientation="Horizontal"  HorizontalAlignment="Center">
-                    <RadioButton Content="1.0.7.0" x:Name="patch7click" Click="version_Click"/>
-                    <RadioButton Content="1.0.8.0" x:Name="patch8click" IsChecked="True" Margin="5,0,0,0" Click="version_Click"/>
-                </StackPanel>
-                <StackPanel Margin="0,5,0,0" Orientation="Horizontal"  HorizontalAlignment="Center">
-                    <CheckBox Content="Full downgrade" x:Name="fullcheckbox" Margin="0,0,0,0" IsChecked="False" HorizontalAlignment="Center" Click="full_Click"/>
-                    <CheckBox Content="Install ZolikaPatch" x:Name="zpatchcheckbox" Margin="5,0,0,0" IsChecked="True" HorizontalAlignment="Center" Click="zpatch_Click" IsEnabled="False"/>
-                </StackPanel>
-                <CheckBox Content="Downgrade radio" x:Name="radiocheckbox" Margin="0,5,0,0" IsChecked="False" HorizontalAlignment="Center" Click="radio_Click"/>
-                <CheckBox Content="Steam Achievements" x:Name="achievementscheckbox"  Margin="0,5,0,0" HorizontalAlignment="Center" IsChecked="True" Click="steamchieves_Click"/>
-                <CheckBox Content="Install FusionFix" x:Name="ffixcheckbox"  Margin="0,5,0,0" HorizontalAlignment="Center" IsChecked="True" Click="ffix_Click"/>
-                <StackPanel Margin="0,5,0,0" Orientation="Horizontal"  HorizontalAlignment="Center">
-                    <CheckBox Content="Make GFWL-compatible" x:Name="gfwlcheckbox" Margin="0,0,0,0" HorizontalAlignment="Center" IsChecked="True" Click="gfwl_Click"/>
-                    <CheckBox Content="XLivelessAddon" x:Name="xlivelesscheckbox" Margin="5,0,0,0" HorizontalAlignment="Center" IsChecked="False" IsEnabled="False" Click="xliveless_Click"/>
-                </StackPanel>
-                <CheckBox Content="Portable GFWL" x:Name="gfwlportablecheckbox" Margin="0,5,0,0" HorizontalAlignment="Center" IsChecked="True" Click="gfwlportable_Click"/>
-                <Button Content="Backup" x:Name="backupbtn" Margin="0,5,0,0" Width="160" Height="25" Click="backup_Click"/>
-                <Button Content="Install redistributables" x:Name="redistbtn" Margin="0,5,0,0" Width="160" Height="25" Click="redist_Click"/>
-                <Button Content="Downgrade" x:Name="downgradebtn" Margin="0,5,0,0" Width="160" Height="25" Click="downgrade_Click"/>
+            <StackPanel x:Name="version" Margin="0,5,0,0" Orientation="Horizontal"  HorizontalAlignment="Center" IsEnabled="False">
+                <RadioButton Content="1.0.7.0" x:Name="patch7click" Click="version_Click"/>
+                <RadioButton Content="1.0.8.0" x:Name="patch8click" IsChecked="True" Margin="5,0,0,0" Click="version_Click"/>
             </StackPanel>
+            <StackPanel x:Name="options" Margin="0,5,0,0" Orientation="Horizontal" HorizontalAlignment="Center" IsEnabled="False">
+                <StackPanel x:Name="downgradeOptionsPanel">
+                    <TextBlock FontSize="12" TextWrapping="Wrap">Downgrade options:</TextBlock>
+                    <CheckBox Content="Full downgrade" x:Name="fullcheckbox" Margin="0,5,0,0" IsChecked="False" Click="full_Click"/>
+                    <CheckBox Content="Downgrade radio" x:Name="radiocheckbox" Margin="0,5,0,0" IsChecked="False" Click="radio_Click"/>
+                    <CheckBox Content="Make GFWL-compatible" x:Name="gfwlcheckbox" Margin="0,5,0,0" IsChecked="True" Click="gfwl_Click"/>
+                    <CheckBox Content="Portable GFWL" x:Name="gfwlportablecheckbox" Margin="0,5,0,0" IsChecked="True" Click="gfwlportable_Click"/>
+                </StackPanel>
+                <StackPanel x:Name="modsPanel" Margin="30,0,0,0">
+                    <TextBlock FontSize="12" TextWrapping="Wrap">Mods:</TextBlock>
+                    <CheckBox Content="Steam Achievements" x:Name="achievementscheckbox"  Margin="0,5,0,0" IsChecked="False" IsEnabled="False" Click="steamchieves_Click"/>
+                    <CheckBox Content="XLivelessAddon" x:Name="xlivelesscheckbox" Margin="0,5,0,0" IsChecked="False" IsEnabled="False" Click="xliveless_Click"/>
+                    <CheckBox Content="ZolikaPatch" x:Name="zpatchcheckbox" Margin="0,5,0,0" IsChecked="True" Click="zpatch_Click" IsEnabled="False"/>
+                    <CheckBox Content="FusionFix" x:Name="ffixcheckbox"  Margin="0,5,0,0" IsChecked="True" Click="ffix_Click"/>
+                </StackPanel>
+            </StackPanel>
+            <Button Content="Backup" x:Name="backupbtn" Margin="0,5,0,0" Width="160" Height="25" Click="backup_Click"/>
+            <Button Content="Install redistributables" x:Name="redistbtn" Margin="0,5,0,0" Width="160" Height="25" Click="redist_Click"/>
+            <Button Content="Downgrade" x:Name="downgradebtn" Margin="0,5,0,0" Width="160" Height="25" Click="downgrade_Click"/>
             <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
                 <TextBlock HorizontalAlignment="Left" Margin="0,0,0,0" TextWrapping="Wrap" VerticalAlignment="Bottom"><Hyperlink NavigateUri="https://gillian-guide.github.io/" RequestNavigate="Hyperlink_RequestNavigate">Visit my Guide</Hyperlink></TextBlock>
                 <TextBlock HorizontalAlignment="Center" Margin="10,0,0,0" TextWrapping="Wrap" VerticalAlignment="Bottom"><Hyperlink NavigateUri="https://discord.gg/gtrf" RequestNavigate="Hyperlink_RequestNavigate">RevIVal Discord Server</Hyperlink></TextBlock>
