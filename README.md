@@ -1,7 +1,7 @@
 # Gillian's GTA IV Downgrade Utility
 Semi-automatically downgrades your GTA IV installation to 1.0.8.0 or 1.0.7.0.
 
-![image](https://github.com/gillian-guide/GTAIVDowngradeUtilityWPF/assets/70141395/ede13d21-9512-4b15-a73f-f4c7b1ad2824)
+![image](https://github.com/gillian-guide/GTAIVDowngradeUtilityWPF/assets/70141395/e1aa0228-8e6c-4ee2-bc13-f3ca3294ecd7)
 
 ## Usage
 - Launch the tool.
