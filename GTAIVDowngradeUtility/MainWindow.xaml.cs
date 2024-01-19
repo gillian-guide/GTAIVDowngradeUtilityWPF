@@ -265,6 +265,9 @@ namespace GTAIVDowngradeUtilityWPF
                         if (dialog.FileName.Contains("Steam")) { achievementscheckbox.IsEnabled = true; achievementscheckbox.IsChecked = true; }
 
                         directorytxt.Text = "Game Directory:";
+                        directorytxt.FontWeight = FontWeights.Normal;
+                        directorytxt.TextDecorations = null;
+                        tipsnote.TextDecorations = TextDecorations.Underline;
                         gamedirectory.Text = dialog.FileName;
                         directory = dialog.FileName;
                         options.IsEnabled = true;
@@ -275,7 +278,7 @@ namespace GTAIVDowngradeUtilityWPF
                     else
                     {
                         Logger.Debug(" User selected the wrong folder. Displaying a MessageBox.");
-                        MessageBox.Show("The selected folder does not contain GTA IV.");
+                        MessageBox.Show("The selected folder does not contain GTA IV. Try again.");
                     }
                 }
                 else

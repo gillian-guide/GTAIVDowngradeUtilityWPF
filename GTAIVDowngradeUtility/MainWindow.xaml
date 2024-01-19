@@ -13,13 +13,13 @@
     <Grid>
         <StackPanel Margin="5,5,5,5" Grid.ColumnSpan="2">
             <TextBlock Margin="0,0,0,0" FontSize="28" TextWrapping="Wrap" HorizontalAlignment="Center">Gillian's GTA IV Downgrade Utility</TextBlock>
-            <TextBlock x:Name="directorytxt" HorizontalAlignment="Left" Margin="0,5,0,0" TextWrapping="Wrap" Text="Set your game directory before using:" VerticalAlignment="Top"/>
+            <TextBlock x:Name="directorytxt" HorizontalAlignment="Left" Margin="0,5,0,0" TextWrapping="Wrap" Text="Set your game directory before using:" VerticalAlignment="Top" FontWeight="SemiBold" TextDecorations="Underline"/>
             <StackPanel Orientation="Horizontal">
                 <TextBox HorizontalAlignment="Left" x:Name="gamedirectory" Margin="0,2,0,0" VerticalAlignment="Top" Width="354" IsEnabled="False"/>
                 <Button Content="Open..." HorizontalAlignment="Left" Margin="5,0,0,0" VerticalAlignment="Top" Width="60" Click="Button_Click"/>
             </StackPanel>
             <StackPanel Margin="0,5,0,0" Orientation="Horizontal" HorizontalAlignment="Center">
-                <TextBlock FontSize="12" TextWrapping="Wrap" HorizontalAlignment="Center">Keep the options at default values unless you know what you're doing.</TextBlock>
+                <TextBlock x:Name="tipsnote" FontSize="12" TextWrapping="Wrap" HorizontalAlignment="Center">Keep the options at default values unless you know what you're doing.</TextBlock>
                 <CheckBox x:Name="tipscheck" Margin="5,0,0,0" IsChecked="True" HorizontalAlignment="Right">Tips</CheckBox>
             </StackPanel>
             <StackPanel x:Name="version" Margin="0,5,0,0" Orientation="Horizontal"  HorizontalAlignment="Center" IsEnabled="False">
@@ -28,14 +28,14 @@
             </StackPanel>
             <StackPanel x:Name="options" Margin="0,5,0,0" Orientation="Horizontal" HorizontalAlignment="Center" IsEnabled="False">
                 <StackPanel x:Name="downgradeOptionsPanel">
-                    <TextBlock FontSize="12" TextWrapping="Wrap">Downgrade options:</TextBlock>
+                    <TextBlock FontSize="12" TextWrapping="Wrap" FontWeight="Bold">Downgrade options:</TextBlock>
                     <CheckBox Content="Full downgrade" x:Name="fullcheckbox" Margin="0,5,0,0" IsChecked="False" Click="full_Click"/>
                     <CheckBox Content="Downgrade radio" x:Name="radiocheckbox" Margin="0,5,0,0" IsChecked="False" Click="radio_Click"/>
                     <CheckBox Content="Make GFWL-compatible" x:Name="gfwlcheckbox" Margin="0,5,0,0" IsChecked="True" Click="gfwl_Click"/>
                     <CheckBox Content="Portable GFWL" x:Name="gfwlportablecheckbox" Margin="0,5,0,0" IsChecked="True" Click="gfwlportable_Click"/>
                 </StackPanel>
                 <StackPanel x:Name="modsPanel" Margin="30,0,0,0">
-                    <TextBlock FontSize="12" TextWrapping="Wrap">Mods:</TextBlock>
+                    <TextBlock FontSize="12" TextWrapping="Wrap" FontWeight="Bold">Mods:</TextBlock>
                     <CheckBox Content="Steam Achievements" x:Name="achievementscheckbox"  Margin="0,5,0,0" IsChecked="False" IsEnabled="False" Click="steamchieves_Click"/>
                     <CheckBox Content="XLivelessAddon" x:Name="xlivelesscheckbox" Margin="0,5,0,0" IsChecked="False" IsEnabled="False" Click="xliveless_Click"/>
                     <CheckBox Content="ZolikaPatch" x:Name="zpatchcheckbox" Margin="0,5,0,0" IsChecked="True" Click="zpatch_Click" IsEnabled="False"/>
