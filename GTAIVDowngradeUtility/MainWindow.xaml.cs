@@ -343,12 +343,18 @@ namespace GTAIVDowngradeUtilityWPF
                             }
                             else
                             {
+                                downgradebtn.Content = "Downgrade";
+                                options.IsEnabled = true;
+                                version.IsEnabled = true;
                                 return;
                             }
                         }
                     }
                     else
                     {
+                        downgradebtn.Content = "Downgrade";
+                        options.IsEnabled = true;
+                        version.IsEnabled = true;
                         return;
                     }
                 }
@@ -396,11 +402,14 @@ namespace GTAIVDowngradeUtilityWPF
                             }
                             else
                             {
-                                return;
+                                break;
                             }
                         }
                         else
                         {
+                            downgradebtn.Content = "Downgrade";
+                            options.IsEnabled = true;
+                            version.IsEnabled = true;
                             return;
                         }
                     }
