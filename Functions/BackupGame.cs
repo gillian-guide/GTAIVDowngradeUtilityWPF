@@ -135,10 +135,6 @@ namespace GTAIVDowngradeUtilityWPF.Functions
             {
                 Directory.CreateDirectory($"{backupfolder}\\common\\data\\cdimages");
             }
-            if (!Directory.Exists($"{backupfolder}\\common\\data\\text\\"))
-            {
-                Directory.CreateDirectory($"{backupfolder}\\common\\data\\text");
-            }
             File.Copy($"{directory}\\common\\data\\cdimages\\script.img", $"{backupfolder}\\common\\data\\cdimages\\script.img", true);
             File.Copy($"{directory}\\common\\data\\cdimages\\script_network.img", $"{backupfolder}\\common\\data\\cdimages\\script_network.img", true);
             File.Copy($"{directory}\\common\\data\\frontend_menus.xml", $"{backupfolder}\\common\\data\\frontend_menus.xml", true);
