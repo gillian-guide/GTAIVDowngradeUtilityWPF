@@ -1,6 +1,6 @@
 using GTAIVDowngradeUtilityWPF.Common;
 using GTAIVDowngradeUtilityWPF.Functions;
-using GTAIVSetupUtilityWPF.Functions;
+using GTAIVDowngradeUtilityWPF.Functions;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using NLog;
 using System;
