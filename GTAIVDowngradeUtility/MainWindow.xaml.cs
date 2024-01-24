@@ -4,13 +4,18 @@ using GTAIVSetupUtilityWPF.Functions;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using NLog;
 using System;
+using System.ComponentModel;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
+using System.Net;
 using System.Net.Http;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 
 // hi here, i'm an awful coder, so please clean up for me if it really bothers you
 
@@ -19,6 +24,7 @@ namespace GTAIVDowngradeUtilityWPF
     public partial class MainWindow : Window
     {
         bool backupexists = false;
+        bool filedownloaded = false;
         string directory;
 
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
@@ -268,10 +274,11 @@ namespace GTAIVDowngradeUtilityWPF
                         directorytxt.FontWeight = FontWeights.Normal;
                         directorytxt.TextDecorations = null;
                         tipsnote.TextDecorations = TextDecorations.Underline;
-                        gamedirectory.Text = dialog.FileName;
                         directory = dialog.FileName;
+                        gamedirectory.Text = directory;
                         options.IsEnabled = true;
                         version.IsEnabled = true;
+                        buttons.IsEnabled = true;
                         break;
                     }
 
@@ -296,10 +303,72 @@ namespace GTAIVDowngradeUtilityWPF
             BackupGame.Backup(directory, backupexists);
             backupbtn.Content = "Backed up!";
         }
+
+        string downloadingWhat;
+        bool redist;
+        bool downloadfinished = false;
+        private async Task Download(string downloadUrl, string destination, string downloadedName, string downloadingWhatFun, bool redistFun)
+        {
+            downloadingWhat = downloadingWhatFun;
+            redist = redistFun;
+            try
+            {
+                Thread thread = new Thread(() => {
+                    Logger.Debug(" Downloading the selected release...");
+                    WebClient client = new WebClient();
+                    client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(client_DownloadProgressChanged);
+                    client.DownloadFileCompleted += new AsyncCompletedEventHandler(client_DownloadFileCompleted);
+                    client.DownloadFileAsync(new Uri(downloadUrl), Path.Combine(destination, downloadedName));
+                });
+                thread.Start();
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Error downloading");
+                throw;
+            }
+        }
+
+        void client_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
+        {
+            Dispatcher.BeginInvoke((Action)delegate
+            {
+                double bytesIn = double.Parse(e.BytesReceived.ToString());
+                double totalBytes = double.Parse(e.TotalBytesToReceive.ToString());
+                double percentage = bytesIn / totalBytes * 100;
+                int percentageInt = Convert.ToInt16(percentage);
+                if (!redist)
+                {
+                    downgradebtn.Content = $"Downloading {downloadingWhat}... ({percentageInt}%)";
+                }
+                else
+                {
+                    redistbtn.Content = $"Downloading {downloadingWhat}... ({percentageInt}%)";
+                }
+            });
+        }
+
+        void client_DownloadFileCompleted(object sender, AsyncCompletedEventArgs e)
+        {
+            Dispatcher.BeginInvoke((Action)delegate
+            {
+                Logger.Debug(" Successfully downloaded.");
+                downloadfinished = true;
+                if (!redist)
+                {
+                    downgradebtn.Content = "Downgrading...";
+                }
+                else
+                {
+                    redistbtn.Content = "Installing redistributables...";
+                }
+            });
+        }
         private async void downgrade_Click(object sender, RoutedEventArgs e)
         {
             options.IsEnabled = false;
             version.IsEnabled = false;
+            buttons.IsEnabled = false;
             downgradebtn.Content = "Downgrading...";
             Logger.Info(" Starting the downgrade...");
             if (backupexists == false)
@@ -346,6 +415,7 @@ namespace GTAIVDowngradeUtilityWPF
                                 downgradebtn.Content = "Downgrade";
                                 options.IsEnabled = true;
                                 version.IsEnabled = true;
+                                buttons.IsEnabled = true;
                                 return;
                             }
                         }
@@ -355,6 +425,7 @@ namespace GTAIVDowngradeUtilityWPF
                         downgradebtn.Content = "Downgrade";
                         options.IsEnabled = true;
                         version.IsEnabled = true;
+                        buttons.IsEnabled = true;
                         return;
                     }
                 }
@@ -410,6 +481,7 @@ namespace GTAIVDowngradeUtilityWPF
                             downgradebtn.Content = "Downgrade";
                             options.IsEnabled = true;
                             version.IsEnabled = true;
+                            buttons.IsEnabled = true;
                             return;
                         }
                     }
@@ -455,14 +527,14 @@ namespace GTAIVDowngradeUtilityWPF
             // ultimate asi loader
             if (zpatchcheckbox.IsChecked == true || ffixcheckbox.IsChecked == true || achievementscheckbox.IsChecked == true || gfwlcheckbox.IsChecked == true || xlivelesscheckbox.IsChecked == true)
             {
-                Logger.Info(" Installing Ultimate ASI Loader (won't be installed if no asi's are selected)...");
+                Logger.Info(" Installing Ultimate ASI Loader (won't be installed if no mods or GFWL are selected)...");
                 string downloadedual = settings["ultimate-asi-loader"].Value;
-                if (!File.Exists("Files\\Shared\\dinput8.dll") || !File.Exists("Files\\Shared\\dinput8.dll"))
+                if (!File.Exists("Files\\Shared\\dinput8.dll") || !File.Exists("Files\\Shared\\xlive.dll"))
                 {
                     settings["ultimate-asi-loader"].Value = "";
                     configFile.Save(ConfigurationSaveMode.Modified);
                     ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
-                    Logger.Debug(" Ultimate ASI Loader not downloaded - changed the value of downloaded ual to null.");
+                    Logger.Debug(" Ultimate ASI Loader not downloaded - changed the value of downloaded ual to none.");
                 }
                 var firstResponseual = await httpClient.GetAsync("https://api.github.com/repos/ThirteenAG/Ultimate-ASI-Loader/releases/latest");
                 firstResponseual.EnsureSuccessStatusCode();
@@ -472,7 +544,12 @@ namespace GTAIVDowngradeUtilityWPF
                 {
                     Logger.Debug(" Latest UAL not matching to downloaded, downloading...");
                     var downloadUrlual = JsonDocument.Parse(firstResponseBodyual).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
-                    GithubDownloader.Download(downloadUrlual!, "Files\\Shared", "Ultimate-ASI-Loader.zip");
+                    Download(downloadUrlual!, "Files\\Shared", "Ultimate-ASI-Loader.zip", $"UAL {latestual}", false);
+                    while (!downloadfinished)
+                    {
+                        await Task.Delay(500);
+                    }
+                    downloadfinished = false;
                     ZipFile.ExtractToDirectory("Files\\Shared\\Ultimate-ASI-Loader.zip", "Files\\Shared\\", true);
                     File.Delete("Files\\Shared\\Ultimate-ASI-Loader.zip");
                     settings["ultimate-asi-loader"].Value = latestual;
@@ -516,14 +593,19 @@ namespace GTAIVDowngradeUtilityWPF
             }
 
             // shared files
-            if (!File.Exists("Files\\Shared\\play.dll"))
+            if (!File.Exists("Files\\Shared\\PlayGTAIV.exe"))
             {
                 Logger.Info(" Downloading shared files...");
                 var firstResponseshared = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIVFullDowngradeAssets/releases/135442404");
                 firstResponseshared.EnsureSuccessStatusCode();
                 var firstResponseBodyshared = await firstResponseshared.Content.ReadAsStringAsync();
                 var downloadUrlshared = JsonDocument.Parse(firstResponseBodyshared).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
-                GithubDownloader.Download(downloadUrlshared!, "Files", "BaseAssets.zip");
+                Download(downloadUrlshared!, "Files", "BaseAssets.zip", "Base assets", false);
+                while (!downloadfinished)
+                {
+                    await Task.Delay(500);
+                }
+                downloadfinished = false;
                 ZipFile.ExtractToDirectory("Files\\BaseAssets.zip", "Files", true);
                 File.Delete("Files\\BaseAssets.zip");
             }
@@ -553,7 +635,12 @@ namespace GTAIVDowngradeUtilityWPF
                         firstResponse1080.EnsureSuccessStatusCode();
                         var firstResponseBody1080 = await firstResponse1080.Content.ReadAsStringAsync();
                         var downloadUrl1080 = JsonDocument.Parse(firstResponseBody1080).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
-                        GithubDownloader.Download(downloadUrl1080!, "Files\\1080FullFiles", "1080FullFiles.zip");
+                        Download(downloadUrl1080!, "Files\\1080FullFiles", "1080FullFiles.zip", "Full files", false);
+                        while (!downloadfinished)
+                        {
+                            await Task.Delay(500);
+                        }
+                        downloadfinished = false;
                         ZipFile.ExtractToDirectory("Files\\1080FullFiles\\1080FullFiles.zip", "Files", true);
                         File.Delete("Files\\1080FullFiles\\1080FullFiles.zip");
                     }
@@ -568,7 +655,12 @@ namespace GTAIVDowngradeUtilityWPF
                         firstResponse1070.EnsureSuccessStatusCode();
                         var firstResponseBody1070 = await firstResponse1070.Content.ReadAsStringAsync();
                         var downloadUrl1070 = JsonDocument.Parse(firstResponseBody1070).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
-                        GithubDownloader.Download(downloadUrl1070!, "Files\\1070FullFiles", "1070FullFiles.zip");
+                        Download(downloadUrl1070!, "Files\\1070FullFiles", "1070FullFiles.zip", "Full files", false);
+                        while (!downloadfinished)
+                        {
+                            await Task.Delay(500);
+                        }
+                        downloadfinished = false;
                         ZipFile.ExtractToDirectory("Files\\1070FullFiles\\1070FullFiles.zip", "Files", true);
                         File.Delete("Files\\1070FullFiles\\1070FullFiles.zip");
                     }
@@ -646,7 +738,12 @@ namespace GTAIVDowngradeUtilityWPF
                     }
                     Logger.Debug(" Downloaded version of FusionFix doesn't match the latest version, downloading...");
                     var downloadUrlff = JsonDocument.Parse(firstResponseBodyff).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
-                    GithubDownloader.Download(downloadUrlff!, "Files\\FusionFix","FusionFix.zip");
+                    Download(downloadUrlff!, "Files\\FusionFix","FusionFix.zip", $"FusionFix {latestff}", false);
+                    while (!downloadfinished)
+                    {
+                        await Task.Delay(500);
+                    }
+                    downloadfinished = false;
                     ZipFile.ExtractToDirectory("Files\\FusionFix\\FusionFix.zip", "Files\\FusionFix\\", true);
                     File.Delete("Files\\FusionFix\\dinput8.dll");
                     File.Delete("Files\\FusionFix\\FusionFix.zip");
@@ -665,7 +762,12 @@ namespace GTAIVDowngradeUtilityWPF
                     firstResponse2.EnsureSuccessStatusCode();
                     var firstResponseBody2 = await firstResponse2.Content.ReadAsStringAsync();
                     var downloadUrl2 = JsonDocument.Parse(firstResponseBody2).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
-                    GithubDownloader.Download(downloadUrl2!, "Files\\FusionFix", "FusionFix-GFWL.zip");
+                    Download(downloadUrl2!, "Files\\FusionFix", "FusionFix-GFWL.zip", "FF-GFWL", false);
+                    while (!downloadfinished)
+                    {
+                        await Task.Delay(500);
+                    }
+                    downloadfinished = false;
                     ZipFile.ExtractToDirectory("Files\\FusionFix\\FusionFix-GFWL.zip", "Files\\FusionFix", true);
                     File.Delete("Files\\FusionFix\\FusionFix-GFWL.zip");
                     CopyFolder("Files\\FusionFix\\", $"{directory}");
@@ -678,12 +780,15 @@ namespace GTAIVDowngradeUtilityWPF
             downgradebtn.Content = "Downgrade";
             options.IsEnabled = true;
             version.IsEnabled = true;
+            buttons.IsEnabled = true;
         }
 
         private async void redist_Click(object sender, RoutedEventArgs e)
         {
-            backupbtn.IsEnabled = false;
-            redistbtn.Content = "Installing...";
+            options.IsEnabled = false;
+            version.IsEnabled = false;
+            buttons.IsEnabled = false;
+            redistbtn.Content = "Installing redistributables...";
 
             var httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.Add("User-Agent", "Other");
@@ -699,7 +804,12 @@ namespace GTAIVDowngradeUtilityWPF
                     Directory.CreateDirectory("Files\\Redist");
                     Logger.Info(" Downloading redistributables...");
                     var downloadUrlredist = JsonDocument.Parse(firstResponseBodyredist).RootElement.GetProperty("assets")[1].GetProperty("browser_download_url").GetString();
-                    GithubDownloader.Download(downloadUrlredist!, "Files", "Redist.zip");
+                    Download(downloadUrlredist!, "Files", "Redist.zip", "redistributables", true);
+                    while (!downloadfinished)
+                    {
+                        await Task.Delay(500);
+                    }
+                    downloadfinished = false;
                     ZipFile.ExtractToDirectory("Files\\Redist\\Redist.zip", "Files", true);
                     File.Delete("Files\\Redist\\Redist.zip");
                 }
@@ -713,7 +823,8 @@ namespace GTAIVDowngradeUtilityWPF
                     }
                 };
                 vcredist.Start();
-                Process.Start($"Files\\Redist\\gfwlivesetup.exe");
+                await vcredist.WaitForExitAsync();
+                await Process.Start($"Files\\Redist\\gfwlivesetup.exe").WaitForExitAsync();
             }
             else
             {
@@ -722,12 +833,13 @@ namespace GTAIVDowngradeUtilityWPF
                     var vcredist = new Process
                     {
                         StartInfo =
-                    {
-                      FileName = $"{directory}\\Redistributables\\VCRed\\vcredist_x86.exe",
-                      Arguments = "/Q"
-                    }
+                        {
+                          FileName = $"{directory}\\Redistributables\\VCRed\\vcredist_x86.exe",
+                          Arguments = "/Q"
+                        }
                     };
                     vcredist.Start();
+                    await vcredist.WaitForExitAsync();
                 }
                 else
                 {
@@ -736,7 +848,12 @@ namespace GTAIVDowngradeUtilityWPF
                         Directory.CreateDirectory("Files\\Redist");
                         Logger.Info(" Downloading redistributables...");
                         var downloadUrlredist = JsonDocument.Parse(firstResponseBodyredist).RootElement.GetProperty("assets")[1].GetProperty("browser_download_url").GetString();
-                        GithubDownloader.Download(downloadUrlredist!, "Files", "Redist.zip");
+                        Download(downloadUrlredist!, "Files", "Redist.zip", "Redistributables", true);
+                        while (!downloadfinished)
+                        {
+                            await Task.Delay(500);
+                        }
+                        downloadfinished = false;
                         ZipFile.ExtractToDirectory("Files\\Redist\\Redist.zip", "Files", true);
                         File.Delete("Files\\Redist\\Redist.zip");
                     }
@@ -750,9 +867,12 @@ namespace GTAIVDowngradeUtilityWPF
                     }
                     };
                     vcredist.Start();
+                    await vcredist.WaitForExitAsync();
                 }
             }
-            redistbtn.IsEnabled = true;
+            options.IsEnabled = true;
+            version.IsEnabled = true;
+            buttons.IsEnabled = true;
             redistbtn.Content = "Reinstall redistributables";
         }
     }

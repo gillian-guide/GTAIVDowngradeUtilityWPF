@@ -42,9 +42,11 @@
                     <CheckBox Content="FusionFix" x:Name="ffixcheckbox"  Margin="0,5,0,0" IsChecked="True" Click="ffix_Click"/>
                 </StackPanel>
             </StackPanel>
-            <Button Content="Backup" x:Name="backupbtn" Margin="0,5,0,0" Width="160" Height="25" Click="backup_Click" FontWeight="DemiBold"/>
-            <Button Content="Install redistributables" x:Name="redistbtn" Margin="0,5,0,0" Width="160" Height="25" Click="redist_Click" FontWeight="SemiBold"/>
-            <Button Content="Downgrade" x:Name="downgradebtn" Margin="0,5,0,0" Width="160" Height="25" Click="downgrade_Click" FontWeight="Bold"/>
+            <StackPanel x:Name="buttons" IsEnabled="False">
+                <Button Content="Backup" x:Name="backupbtn" Margin="0,5,0,0" Width="220" Height="25" Click="backup_Click" FontWeight="DemiBold"/>
+                <Button Content="Install redistributables" x:Name="redistbtn" Margin="0,5,0,0" Width="220" Height="25" Click="redist_Click" FontWeight="SemiBold"/>
+                <Button Content="Downgrade" x:Name="downgradebtn" Margin="0,5,0,0" Width="220" Height="25" Click="downgrade_Click" FontWeight="Bold"/>
+            </StackPanel>
             <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
                 <TextBlock HorizontalAlignment="Left" Margin="0,0,0,0" TextWrapping="Wrap" VerticalAlignment="Bottom"><Hyperlink NavigateUri="https://gillian-guide.github.io/" RequestNavigate="Hyperlink_RequestNavigate">Visit my Guide</Hyperlink></TextBlock>
                 <TextBlock HorizontalAlignment="Center" Margin="10,0,0,0" TextWrapping="Wrap" VerticalAlignment="Bottom"><Hyperlink NavigateUri="https://discord.gg/gtrf" RequestNavigate="Hyperlink_RequestNavigate">RevIVal Discord Server</Hyperlink></TextBlock>
