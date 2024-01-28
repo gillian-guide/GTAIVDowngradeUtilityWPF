@@ -24,7 +24,6 @@ namespace GTAIVDowngradeUtilityWPF
     public partial class MainWindow : Window
     {
         bool backupexists = false;
-        bool filedownloaded = false;
         string directory;
 
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
@@ -203,7 +202,7 @@ namespace GTAIVDowngradeUtilityWPF
             if (tipscheck.IsChecked == true)
             {
                 Logger.Debug(" Displaying a tip...");
-                MessageBox.Show("This option installs Zolika's Steam Achievements mod to be able to get Steam achievements on downgraded copies.\n\nMay not work with GFWL.");
+                MessageBox.Show("This option installs Zolika's Steam Achievements mod to be able to get Steam achievements on downgraded copies.\n\nMay not work with GFWL. Option is disabled if you don't have your game installed in `steamapps`.");
             }
         }
 
@@ -268,7 +267,7 @@ namespace GTAIVDowngradeUtilityWPF
 
                         if (Directory.Exists($"{dialog.FileName}\\backup")) { backupexists = true; }
 
-                        if (dialog.FileName.Contains("Steam")) { achievementscheckbox.IsEnabled = true; achievementscheckbox.IsChecked = true; }
+                        if (dialog.FileName.Contains("steamapps")) { achievementscheckbox.IsEnabled = true; achievementscheckbox.IsChecked = true; }
 
                         directorytxt.Text = "Game Directory:";
                         directorytxt.FontWeight = FontWeights.Normal;
