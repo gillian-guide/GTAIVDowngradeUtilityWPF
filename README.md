@@ -20,10 +20,9 @@ Semi-automatically downgrades your GTA IV installation to 1.0.8.0 or 1.0.7.0.
 
 ## Features that require downloading
 Downloads are a one-time only (unless an update is detected for UAL or FF)
-- Ultimate ASI Loader (if any `.asi` mods are selected, that being ZolikaPatch, Steam Achievements, FusionFix or XLivelessAddon).
-- Downgrade radio.
-- Install FusionFix.
-- Install Redistributables.
+- Full downgrade
+- Downgrade radio
+- Any of the mods
 
 ## Contribution
 Contribution is highly welcome. I'm poorly experienced with C#, so the current code is extremely clunky and works out of prayers. There's also far too many checks that I have no desire to optimize.
