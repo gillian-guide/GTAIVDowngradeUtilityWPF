@@ -301,6 +301,7 @@ namespace GTAIVDowngradeUtilityWPF
             backupbtn.Content = "Backing up...";
             BackupGame.Backup(directory, backupexists);
             backupbtn.Content = "Backed up!";
+            backupexists = true;
         }
 
         string downloadingWhat;
@@ -377,6 +378,7 @@ namespace GTAIVDowngradeUtilityWPF
                 if (result == MessageBoxResult.Yes)
                 {
                     BackupGame.Backup(directory, backupexists);
+                    backupexists = true;
                 }
             }
 

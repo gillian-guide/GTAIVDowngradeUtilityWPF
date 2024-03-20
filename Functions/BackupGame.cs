@@ -160,8 +160,6 @@ namespace GTAIVDowngradeUtilityWPF.Functions
                     File.Copy($"{directory}\\pc\\audio\\config\\{filename}", $"{backupfolder}\\pc\\audio\\config\\{filename}", true);
                 }
             }
-
-            backupexists = true;
             MessageBox.Show("Successfully backed up!");
             Logger.Debug(" Backup complete, disabled the backup button to prevent accidental backups after downgrading.");
         }
