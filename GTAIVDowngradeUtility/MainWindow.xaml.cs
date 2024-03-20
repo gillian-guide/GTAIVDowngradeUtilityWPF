@@ -9,6 +9,7 @@ using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
+using System.Linq.Expressions;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
@@ -537,8 +538,17 @@ namespace GTAIVDowngradeUtilityWPF
                     ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
                     Logger.Debug(" Ultimate ASI Loader not downloaded - changed the value of downloaded ual to none.");
                 }
-                var firstResponseual = await httpClient.GetAsync("https://api.github.com/repos/ThirteenAG/Ultimate-ASI-Loader/releases/latest");
-                firstResponseual.EnsureSuccessStatusCode();
+                HttpResponseMessage firstResponseual;
+                try
+                {
+                    firstResponseual = await httpClient.GetAsync("https://api.github.com/repos/ThirteenAG/Ultimate-ASI-Loader/releases/latest");
+                    firstResponseual.EnsureSuccessStatusCode();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex, "Error getting latest release, probably ratelimited");
+                    throw;
+                }
                 var firstResponseBodyual = await firstResponseual.Content.ReadAsStringAsync();
                 var latestual = JsonDocument.Parse(firstResponseBodyual).RootElement.GetProperty("tag_name").GetString();
                 if (latestual != downloadedual)
@@ -597,8 +607,17 @@ namespace GTAIVDowngradeUtilityWPF
             if (!File.Exists("Files\\Shared\\PlayGTAIV.exe"))
             {
                 Logger.Info(" Downloading shared files...");
-                var firstResponseshared = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIVFullDowngradeAssets/releases/135442404");
-                firstResponseshared.EnsureSuccessStatusCode();
+                HttpResponseMessage firstResponseshared;
+                try
+                {
+                    firstResponseshared = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIVFullDowngradeAssets/releases/135442404");
+                    firstResponseshared.EnsureSuccessStatusCode();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex, "Error getting latest release, probably ratelimited");
+                    throw;
+                }
                 var firstResponseBodyshared = await firstResponseshared.Content.ReadAsStringAsync();
                 var downloadUrlshared = JsonDocument.Parse(firstResponseBodyshared).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
                 Download(downloadUrlshared!, "Files", "BaseAssets.zip", "Base assets", false);
@@ -632,8 +651,17 @@ namespace GTAIVDowngradeUtilityWPF
                     if (!Directory.Exists("Files\\1080FullFiles"))
                     {
                         Directory.CreateDirectory("Files\\1080FullFiles");
-                        var firstResponse1080 = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIVFullDowngradeAssets/releases/135442415");
-                        firstResponse1080.EnsureSuccessStatusCode();
+                        HttpResponseMessage firstResponse1080;
+                        try
+                        {
+                            firstResponse1080 = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIVFullDowngradeAssets/releases/135442415");
+                            firstResponse1080.EnsureSuccessStatusCode();
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Error(ex, "Error getting latest release, probably ratelimited");
+                            throw;
+                        }
                         var firstResponseBody1080 = await firstResponse1080.Content.ReadAsStringAsync();
                         var downloadUrl1080 = JsonDocument.Parse(firstResponseBody1080).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
                         Download(downloadUrl1080!, "Files\\1080FullFiles", "1080FullFiles.zip", "Full files", false);
@@ -652,8 +680,17 @@ namespace GTAIVDowngradeUtilityWPF
                     if (!Directory.Exists("Files\\1070FullFiles"))
                     {
                         Directory.CreateDirectory("Files\\1070FullFiles");
-                        var firstResponse1070 = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIVFullDowngradeAssets/releases/135442418");
-                        firstResponse1070.EnsureSuccessStatusCode();
+                        HttpResponseMessage firstResponse1070;
+                        try
+                        {
+                            firstResponse1070 = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIVFullDowngradeAssets/releases/135442418");
+                            firstResponse1070.EnsureSuccessStatusCode();
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Error(ex, "Error getting latest release, probably ratelimited");
+                            throw;
+                        }
                         var firstResponseBody1070 = await firstResponse1070.Content.ReadAsStringAsync();
                         var downloadUrl1070 = JsonDocument.Parse(firstResponseBody1070).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
                         Download(downloadUrl1070!, "Files\\1070FullFiles", "1070FullFiles.zip", "Full files", false);
@@ -727,9 +764,18 @@ namespace GTAIVDowngradeUtilityWPF
                     ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
                     Logger.Debug(" FusionFix not downloaded - changed the value of downloaded ffix to null.");
                 }
-                var firstResponseff = await httpClient.GetAsync("https://api.github.com/repos/ThirteenAG/GTAIV.EFLC.FusionFix/releases/latest");
-                firstResponseff.EnsureSuccessStatusCode();
-                var firstResponseBodyff = await firstResponseff.Content.ReadAsStringAsync();
+                HttpResponseMessage firstResponseff;
+                try
+                {
+                    firstResponseff = await httpClient.GetAsync("https://api.github.com/repos/ThirteenAG/GTAIV.EFLC.FusionFix/releases/latest");
+                    firstResponseff.EnsureSuccessStatusCode();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex, "Error getting latest release, probably ratelimited");
+                    throw;
+                }
+                string firstResponseBodyff = await firstResponseff.Content.ReadAsStringAsync();
                 var latestff = JsonDocument.Parse(firstResponseBodyff).RootElement.GetProperty("tag_name").GetString();
                 if (latestff != downloadedff)
                 {
@@ -759,8 +805,17 @@ namespace GTAIVDowngradeUtilityWPF
                 if (gfwlcheckbox.IsChecked == true)
                 {
                     Logger.Info(" Downloading the GFWL Patch for FusionFix...");
-                    var firstResponse2 = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIV.EFLC.FusionFix-GFWL/releases/latest");
-                    firstResponse2.EnsureSuccessStatusCode();
+                    HttpResponseMessage firstResponse2;
+                    try
+                    {
+                        firstResponse2 = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIV.EFLC.FusionFix-GFWL/releases/latest");
+                        firstResponse2.EnsureSuccessStatusCode();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Error(ex, "Error getting latest release, probably ratelimited");
+                        throw;
+                    }
                     var firstResponseBody2 = await firstResponse2.Content.ReadAsStringAsync();
                     var downloadUrl2 = JsonDocument.Parse(firstResponseBody2).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
                     Download(downloadUrl2!, "Files\\FusionFix", "FusionFix-GFWL.zip", "FF-GFWL", false);
@@ -794,8 +849,17 @@ namespace GTAIVDowngradeUtilityWPF
             var httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.Add("User-Agent", "Other");
 
-            var firstResponseredist = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIVFullDowngradeAssets/releases/latest");
-            firstResponseredist.EnsureSuccessStatusCode();
+            HttpResponseMessage firstResponseredist;
+            try
+            {
+                firstResponseredist = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIVFullDowngradeAssets/releases/latest");
+                firstResponseredist.EnsureSuccessStatusCode();
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Error getting latest release, probably ratelimited");
+                throw;
+            }
             var firstResponseBodyredist = await firstResponseredist.Content.ReadAsStringAsync();
             Logger.Debug(" Installing redistributables...");
             if (gfwlportablecheckbox.IsChecked == false)
