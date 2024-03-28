@@ -1,8 +1,10 @@
 using GTAIVDowngradeUtilityWPF.Common;
 using GTAIVDowngradeUtilityWPF.Functions;
 using GTAIVDowngradeUtilityWPF.Functions;
+using Microsoft.Win32;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using NLog;
+using RedistributableChecker;
 using System;
 using System.ComponentModel;
 using System.Configuration;
@@ -46,6 +48,7 @@ namespace GTAIVDowngradeUtilityWPF
             Logger.Info(" Initializing the main window...");
             InitializeComponent();
             Logger.Info(" Main window initialized!");
+            IsGFWLInstalled();
         }
 
         private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
@@ -104,6 +107,31 @@ namespace GTAIVDowngradeUtilityWPF
                 MessageBox.Show("1.0.8.0 is generally a better patch, as it fixes a few bugs, including VRAM detection and a few 60 FPS issues.\n\nYou may want to prefer 1.0.7.0 if your specific mods (LCPDFR, ScriptHookDotNet mods) don't support 1.0.8.0, but generally it's recommended to keep it at 1.0.8.0.");
             }
 
+        }
+
+        public bool IsGFWLInstalled()
+        {
+            const string keyPath = @"SOFTWARE\Classes\Installer\Products\";
+            const string gfwlKeyName = "Microsoft Games for Windows - LIVE Redistributable";
+
+            using (RegistryKey dependencies = Registry.LocalMachine.OpenSubKey(keyPath))
+            {
+                if (dependencies != null)
+                {
+                    foreach (string subkeyName in dependencies.GetSubKeyNames())
+                    {
+                        using (RegistryKey subkey = dependencies.OpenSubKey(subkeyName))
+                        {
+                            string displayName = subkey.GetValue("ProductName") as String;
+                            if (displayName != null && displayName.Contains(gfwlKeyName))
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
         }
 
         private void full_Click(object sender, RoutedEventArgs e)
@@ -172,14 +200,15 @@ namespace GTAIVDowngradeUtilityWPF
             if (gfwlcheckbox.IsChecked == false)
             {
                 xlivelesscheckbox.IsEnabled = true;
-                gfwlportablecheckbox.IsChecked = false;
-                gfwlportablecheckbox.IsEnabled = false;
+                if (achievementscheckbox.IsEnabled == true)
+                {
+                    achievementscheckbox.IsChecked = true;
+                }
             }
             else
             {
                 xlivelesscheckbox.IsEnabled = false;
-                gfwlportablecheckbox.IsEnabled = true;
-                gfwlportablecheckbox.IsChecked = true;
+                achievementscheckbox.IsChecked = false;
             }
             if (tipscheck.IsChecked == true)
             {
@@ -188,13 +217,33 @@ namespace GTAIVDowngradeUtilityWPF
             }
         }
 
-        private void gfwlportable_Click(object sender, RoutedEventArgs e)
+        private void advanced_Click(object sender, RoutedEventArgs e)
         {
-            Logger.Debug(" User toggled Portable GFWL");
+            Logger.Debug(" User toggled advanced mode.");
+            if (advancedcheck.IsChecked == true)
+            {
+                version.Visibility = Visibility.Visible;
+                fullcheckbox.Visibility = Visibility.Visible;
+                radiocheckbox.Visibility = Visibility.Visible;
+                achievementscheckbox.Visibility = Visibility.Visible;
+                xlivelesscheckbox.Visibility = Visibility.Visible;
+                zpatchcheckbox.Visibility = Visibility.Visible;
+                tipsnote.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                version.Visibility = Visibility.Collapsed;
+                fullcheckbox.Visibility = Visibility.Collapsed;
+                radiocheckbox.Visibility = Visibility.Collapsed;
+                achievementscheckbox.Visibility = Visibility.Collapsed;
+                xlivelesscheckbox.Visibility = Visibility.Collapsed;
+                zpatchcheckbox.Visibility = Visibility.Collapsed;
+                tipsnote.Visibility = Visibility.Collapsed;
+            }
             if (tipscheck.IsChecked == true)
             {
                 Logger.Debug(" Displaying a tip...");
-                MessageBox.Show("This option will add portable GFWL files, removing the necessity to install GFWL Redistributables.");
+                MessageBox.Show("Advanced Mode enables all toggles. They're hidden by default as the defaults for these options are fine for majority.\n\nDon't touch these toggles if you have no idea what you're doing and read the tips.");
             }
         }
         private void steamchieves_Click(object sender, RoutedEventArgs e)
@@ -203,7 +252,7 @@ namespace GTAIVDowngradeUtilityWPF
             if (tipscheck.IsChecked == true)
             {
                 Logger.Debug(" Displaying a tip...");
-                MessageBox.Show("This option installs Zolika's Steam Achievements mod to be able to get Steam achievements on downgraded copies.\n\nMay not work with GFWL. Option is disabled if you don't have your game installed in `steamapps`.");
+                MessageBox.Show("This option installs Zolika's Steam Achievements mod to be able to get Steam achievements on downgraded copies.\n\nWill not work with GFWL. Option is disabled if you don't have your game installed in `steamapps`.");
             }
         }
 
@@ -214,12 +263,9 @@ namespace GTAIVDowngradeUtilityWPF
             {
                 gfwlcheckbox.IsChecked = false;
                 gfwlcheckbox.IsEnabled = false;
-                gfwlportablecheckbox.IsChecked = false;
-                gfwlportablecheckbox.IsEnabled = false;
             }
             else
             {
-                gfwlportablecheckbox.IsEnabled = true;
                 gfwlcheckbox.IsEnabled = true;
             }
             if (tipscheck.IsChecked == true)
@@ -268,7 +314,7 @@ namespace GTAIVDowngradeUtilityWPF
 
                         if (Directory.Exists($"{dialog.FileName}\\backup")) { backupexists = true; }
 
-                        if (dialog.FileName.Contains("steamapps")) { achievementscheckbox.IsEnabled = true; achievementscheckbox.IsChecked = true; }
+                        if (dialog.FileName.Contains("steamapps")) { achievementscheckbox.IsEnabled = true; }
 
                         directorytxt.Text = "Game Directory:";
                         directorytxt.FontWeight = FontWeights.Normal;
@@ -296,22 +342,11 @@ namespace GTAIVDowngradeUtilityWPF
             }
         }
 
-        private void backup_Click(object sender, RoutedEventArgs e)
-        {
-            backupbtn.IsEnabled = false;
-            backupbtn.Content = "Backing up...";
-            BackupGame.Backup(directory, backupexists);
-            backupbtn.Content = "Backed up!";
-            backupexists = true;
-        }
-
         string downloadingWhat;
-        bool redist;
         bool downloadfinished = false;
-        private async Task Download(string downloadUrl, string destination, string downloadedName, string downloadingWhatFun, bool redistFun)
+        private async Task Download(string downloadUrl, string destination, string downloadedName, string downloadingWhatFun)
         {
             downloadingWhat = downloadingWhatFun;
-            redist = redistFun;
             try
             {
                 Thread thread = new Thread(() => {
@@ -338,14 +373,7 @@ namespace GTAIVDowngradeUtilityWPF
                 double totalBytes = double.Parse(e.TotalBytesToReceive.ToString());
                 double percentage = bytesIn / totalBytes * 100;
                 int percentageInt = Convert.ToInt16(percentage);
-                if (!redist)
-                {
-                    downgradebtn.Content = $"Downloading {downloadingWhat}... ({percentageInt}%)";
-                }
-                else
-                {
-                    redistbtn.Content = $"Downloading {downloadingWhat}... ({percentageInt}%)";
-                }
+                downgradebtn.Content = $"Downloading {downloadingWhat}... ({percentageInt}%)";
             });
         }
 
@@ -355,14 +383,7 @@ namespace GTAIVDowngradeUtilityWPF
             {
                 Logger.Debug(" Successfully downloaded.");
                 downloadfinished = true;
-                if (!redist)
-                {
-                    downgradebtn.Content = "Downgrading...";
-                }
-                else
-                {
-                    redistbtn.Content = "Installing redistributables...";
-                }
+                downgradebtn.Content = "Downgrading...";
             });
         }
         private async void downgrade_Click(object sender, RoutedEventArgs e)
@@ -375,7 +396,7 @@ namespace GTAIVDowngradeUtilityWPF
             if (backupexists == false)
             {
                 Logger.Debug(" Backup not found, prompting to backup.");
-                MessageBoxResult result = MessageBox.Show("Backup not found. Do you wish to backup now?", "No backup found", MessageBoxButton.YesNo);
+                MessageBoxResult result = MessageBox.Show("Backup not found. Do you wish to backup now?\n\nAny plugin mods found will be removed, but they can be found again in the backup.", "No backup found", MessageBoxButton.YesNo);
                 if (result == MessageBoxResult.Yes)
                 {
                     BackupGame.Backup(directory, backupexists);
@@ -385,6 +406,7 @@ namespace GTAIVDowngradeUtilityWPF
 
             if (radiocheckbox.IsChecked == true)
             {
+                Logger.Info(" Downgrading radio...");
                 if (ffixcheckbox.IsChecked == true && !File.Exists($"{directory}\\update\\pc\\audio\\sfx\\radio_ny_classics.rpf"))
                 {
                     MessageBoxResult result = MessageBox.Show("You chose to downgrade radio, but you don't have any downgrader downloaded.\n\nDo you wish to download one now? (you will be sent to download a downgrader that matches your options; selecting no will cancel downgrading)", "No radio downgrader found", MessageBoxButton.YesNo);
@@ -503,8 +525,58 @@ namespace GTAIVDowngradeUtilityWPF
             var httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.Add("User-Agent", "Other");
 
+            Logger.Info(" Checking redistributables...");
+            bool isvc = RedistributablePackage.IsInstalled(RedistributablePackageVersion.VC2005x86);
+            bool isgfwl = IsGFWLInstalled();
+
+            if (!isvc || (!isgfwl && gfwlcheckbox.IsChecked == true))
+            {
+                Logger.Info(" Some redistributable not found...");
+                if (!Directory.Exists("Files\\Redist"))
+                {
+                    Logger.Info(" Downloading redistributables...");
+                    HttpResponseMessage firstResponseredist;
+                    try
+                    {
+                        firstResponseredist = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIVFullDowngradeAssets/releases/latest");
+                        firstResponseredist.EnsureSuccessStatusCode();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Error(ex, "Error getting latest release, probably ratelimited");
+                        throw;
+                    }
+                    var firstResponseBodyredist = await firstResponseredist.Content.ReadAsStringAsync();
+                    Directory.CreateDirectory("Files\\Redist");
+                    var downloadUrlredist = JsonDocument.Parse(firstResponseBodyredist).RootElement.GetProperty("assets")[1].GetProperty("browser_download_url").GetString();
+                    Download(downloadUrlredist!, "Files", "Redist.zip", "redistributables");
+                    while (!downloadfinished)
+                    {
+                        await Task.Delay(500);
+                    }
+                    downloadfinished = false;
+                    ZipFile.ExtractToDirectory("Files\\Redist.zip", "Files\\Redist", true);
+                    File.Delete("Files\\Redist.zip");
+                }
+                if (!isvc)
+                {
+                    Logger.Info("Installing Visual C++ redistributable...");
+                    var vcredist = new Process
+                    {
+                        StartInfo =
+                        {
+                            FileName = $"Files\\Redist\\vcredist_x86.exe",
+                            Arguments = "/Q"
+                        } 
+                    };
+                    vcredist.Start();
+                    await vcredist.WaitForExitAsync();
+                }
+                if (!isgfwl && gfwlcheckbox.IsChecked == true) { Logger.Info(" Installing GFWL redistributables..."); await Process.Start($"Files\\Redist\\gfwlivesetup.exe").WaitForExitAsync(); }
+            }
+
             // removing any scripts because they can break shit and we don't want that
-            Logger.Info(" Removing existing plugins to avoid incompatibility.");
+            Logger.Info(" Removing existing plugins to avoid incompatibility (can be found in the backup again).");
             foreach (var file in Directory.GetFiles(directory, "*.asi"))
             {
                 File.Delete(file);
@@ -529,7 +601,7 @@ namespace GTAIVDowngradeUtilityWPF
             // ultimate asi loader
             if (zpatchcheckbox.IsChecked == true || ffixcheckbox.IsChecked == true || achievementscheckbox.IsChecked == true || gfwlcheckbox.IsChecked == true || xlivelesscheckbox.IsChecked == true)
             {
-                Logger.Info(" Installing Ultimate ASI Loader (won't be installed if no mods or GFWL are selected)...");
+                Logger.Info(" Installing Ultimate ASI Loader...");
                 string downloadedual = settings["ultimate-asi-loader"].Value;
                 if (!File.Exists("Files\\Shared\\dinput8.dll") || !File.Exists("Files\\Shared\\xlive.dll"))
                 {
@@ -555,7 +627,7 @@ namespace GTAIVDowngradeUtilityWPF
                 {
                     Logger.Debug(" Latest UAL not matching to downloaded, downloading...");
                     var downloadUrlual = JsonDocument.Parse(firstResponseBodyual).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
-                    Download(downloadUrlual!, "Files\\Shared", "Ultimate-ASI-Loader.zip", $"UAL {latestual}", false);
+                    Download(downloadUrlual!, "Files\\Shared", "Ultimate-ASI-Loader.zip", $"UAL {latestual}");
                     while (!downloadfinished)
                     {
                         await Task.Delay(500);
@@ -620,7 +692,7 @@ namespace GTAIVDowngradeUtilityWPF
                 }
                 var firstResponseBodyshared = await firstResponseshared.Content.ReadAsStringAsync();
                 var downloadUrlshared = JsonDocument.Parse(firstResponseBodyshared).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
-                Download(downloadUrlshared!, "Files", "BaseAssets.zip", "Base assets", false);
+                Download(downloadUrlshared!, "Files", "BaseAssets.zip", "Base assets");
                 while (!downloadfinished)
                 {
                     await Task.Delay(500);
@@ -636,16 +708,14 @@ namespace GTAIVDowngradeUtilityWPF
             // GFWL files
             if (gfwlcheckbox.IsChecked == true)
             {
+                Logger.Info(" Copying GFWL files...");
                 CopyFolder("Files\\GFWL", directory);
-                if (gfwlportablecheckbox.IsChecked == true)
-                {
-                    CopyFolder("Files\\PortableGFWL", directory);
-                }
             }
 
             // full files
             if (fullcheckbox.IsChecked == true)
             {
+                Logger.Info(" Downloading and copying full files...");
                 if (patch8click.IsChecked == true)
                 {
                     if (!Directory.Exists("Files\\1080FullFiles"))
@@ -664,7 +734,7 @@ namespace GTAIVDowngradeUtilityWPF
                         }
                         var firstResponseBody1080 = await firstResponse1080.Content.ReadAsStringAsync();
                         var downloadUrl1080 = JsonDocument.Parse(firstResponseBody1080).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
-                        Download(downloadUrl1080!, "Files\\1080FullFiles", "1080FullFiles.zip", "Full files", false);
+                        Download(downloadUrl1080!, "Files\\1080FullFiles", "1080FullFiles.zip", "Full files");
                         while (!downloadfinished)
                         {
                             await Task.Delay(500);
@@ -693,7 +763,7 @@ namespace GTAIVDowngradeUtilityWPF
                         }
                         var firstResponseBody1070 = await firstResponse1070.Content.ReadAsStringAsync();
                         var downloadUrl1070 = JsonDocument.Parse(firstResponseBody1070).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
-                        Download(downloadUrl1070!, "Files\\1070FullFiles", "1070FullFiles.zip", "Full files", false);
+                        Download(downloadUrl1070!, "Files\\1070FullFiles", "1070FullFiles.zip", "Full files");
                         while (!downloadfinished)
                         {
                             await Task.Delay(500);
@@ -709,6 +779,7 @@ namespace GTAIVDowngradeUtilityWPF
             // steam achievements
             if (achievementscheckbox.IsChecked == true)
             {
+                Logger.Info(" Copying Steam Achievements mod...");
                 File.Copy("Files\\ZolikaPatch\\SteamAchievements.asi", $"{directory}\\SteamAchievements.asi", true);
             }
 
@@ -742,7 +813,7 @@ namespace GTAIVDowngradeUtilityWPF
                         }
                 }
             }
-            Logger.Info(" Moving over the specific .exe...");
+            Logger.Info(" Moving over GTAIV.exe...");
             if (patch8click.IsChecked == true)
             {
                 File.Copy("Files\\1080\\GTAIV.exe", $"{directory}\\GTAIV.exe", true);
@@ -785,7 +856,7 @@ namespace GTAIVDowngradeUtilityWPF
                     }
                     Logger.Debug(" Downloaded version of FusionFix doesn't match the latest version, downloading...");
                     var downloadUrlff = JsonDocument.Parse(firstResponseBodyff).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
-                    Download(downloadUrlff!, "Files\\FusionFix","FusionFix.zip", $"FusionFix {latestff}", false);
+                    Download(downloadUrlff!, "Files\\FusionFix","FusionFix.zip", $"FusionFix {latestff}");
                     while (!downloadfinished)
                     {
                         await Task.Delay(500);
@@ -818,7 +889,7 @@ namespace GTAIVDowngradeUtilityWPF
                     }
                     var firstResponseBody2 = await firstResponse2.Content.ReadAsStringAsync();
                     var downloadUrl2 = JsonDocument.Parse(firstResponseBody2).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
-                    Download(downloadUrl2!, "Files\\FusionFix", "FusionFix-GFWL.zip", "FF-GFWL", false);
+                    Download(downloadUrl2!, "Files\\FusionFix", "FusionFix-GFWL.zip", "FF-GFWL");
                     while (!downloadfinished)
                     {
                         await Task.Delay(500);
@@ -828,8 +899,6 @@ namespace GTAIVDowngradeUtilityWPF
                     File.Delete("Files\\FusionFix\\FusionFix-GFWL.zip");
                     CopyFolder("Files\\FusionFix\\", $"{directory}");
                 }
-
-
             }
             Logger.Info(" Successfully downgraded!");
             MessageBox.Show("Your game has been downgraded in accordance with selected options!");
@@ -837,108 +906,6 @@ namespace GTAIVDowngradeUtilityWPF
             options.IsEnabled = true;
             version.IsEnabled = true;
             buttons.IsEnabled = true;
-        }
-
-        private async void redist_Click(object sender, RoutedEventArgs e)
-        {
-            options.IsEnabled = false;
-            version.IsEnabled = false;
-            buttons.IsEnabled = false;
-            redistbtn.Content = "Installing redistributables...";
-
-            var httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.Add("User-Agent", "Other");
-
-            HttpResponseMessage firstResponseredist;
-            try
-            {
-                firstResponseredist = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIVFullDowngradeAssets/releases/latest");
-                firstResponseredist.EnsureSuccessStatusCode();
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex, "Error getting latest release, probably ratelimited");
-                throw;
-            }
-            var firstResponseBodyredist = await firstResponseredist.Content.ReadAsStringAsync();
-            Logger.Debug(" Installing redistributables...");
-            if (gfwlportablecheckbox.IsChecked == false)
-            {
-                if (!Directory.Exists("Files\\Redist"))
-                {
-                    Directory.CreateDirectory("Files\\Redist");
-                    Logger.Info(" Downloading redistributables...");
-                    var downloadUrlredist = JsonDocument.Parse(firstResponseBodyredist).RootElement.GetProperty("assets")[1].GetProperty("browser_download_url").GetString();
-                    Download(downloadUrlredist!, "Files", "Redist.zip", "redistributables", true);
-                    while (!downloadfinished)
-                    {
-                        await Task.Delay(500);
-                    }
-                    downloadfinished = false;
-                    ZipFile.ExtractToDirectory("Files\\Redist\\Redist.zip", "Files", true);
-                    File.Delete("Files\\Redist\\Redist.zip");
-                }
-
-                var vcredist = new Process
-                {
-                    StartInfo =
-                    {
-                      FileName = $"Files\\Redist\\vcredist_x86.exe",
-                      Arguments = "/Q"
-                    }
-                };
-                vcredist.Start();
-                await vcredist.WaitForExitAsync();
-                await Process.Start($"Files\\Redist\\gfwlivesetup.exe").WaitForExitAsync();
-            }
-            else
-            {
-                if (File.Exists($"{directory}\\Redistributables\\VCRed\\vcredist_x86.exe"))
-                {
-                    var vcredist = new Process
-                    {
-                        StartInfo =
-                        {
-                          FileName = $"{directory}\\Redistributables\\VCRed\\vcredist_x86.exe",
-                          Arguments = "/Q"
-                        }
-                    };
-                    vcredist.Start();
-                    await vcredist.WaitForExitAsync();
-                }
-                else
-                {
-                    if (!Directory.Exists("Files\\Redist"))
-                    {
-                        Directory.CreateDirectory("Files\\Redist");
-                        Logger.Info(" Downloading redistributables...");
-                        var downloadUrlredist = JsonDocument.Parse(firstResponseBodyredist).RootElement.GetProperty("assets")[1].GetProperty("browser_download_url").GetString();
-                        Download(downloadUrlredist!, "Files", "Redist.zip", "Redistributables", true);
-                        while (!downloadfinished)
-                        {
-                            await Task.Delay(500);
-                        }
-                        downloadfinished = false;
-                        ZipFile.ExtractToDirectory("Files\\Redist\\Redist.zip", "Files", true);
-                        File.Delete("Files\\Redist\\Redist.zip");
-                    }
-
-                    var vcredist = new Process
-                    {
-                        StartInfo =
-                    {
-                      FileName = $"Files\\Redist\\vcredist_x86.exe",
-                      Arguments = "/Q"
-                    }
-                    };
-                    vcredist.Start();
-                    await vcredist.WaitForExitAsync();
-                }
-            }
-            options.IsEnabled = true;
-            version.IsEnabled = true;
-            buttons.IsEnabled = true;
-            redistbtn.Content = "Reinstall redistributables";
         }
     }
 }

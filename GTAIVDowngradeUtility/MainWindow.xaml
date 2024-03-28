@@ -12,39 +12,37 @@
         ResizeMode="NoResize">
     <Grid>
         <StackPanel Margin="5,5,5,5" Grid.ColumnSpan="2">
-            <TextBlock Margin="0,0,0,0" FontSize="28" TextWrapping="Wrap" HorizontalAlignment="Center">Gillian's GTA IV Downgrade Utility</TextBlock>
+            <TextBlock FontSize="28" TextWrapping="Wrap" HorizontalAlignment="Center">Gillian's GTA IV Downgrade Utility</TextBlock>
             <TextBlock x:Name="directorytxt" HorizontalAlignment="Left" Margin="0,5,0,0" TextWrapping="Wrap" Text="Set your game directory before using:" VerticalAlignment="Top" FontWeight="SemiBold" TextDecorations="Underline"/>
             <StackPanel Orientation="Horizontal">
                 <TextBox HorizontalAlignment="Left" x:Name="gamedirectory" Margin="0,2,0,0" VerticalAlignment="Top" Width="354" IsEnabled="False"/>
                 <Button Content="Open..." HorizontalAlignment="Left" Margin="5,0,0,0" VerticalAlignment="Top" Width="60" Click="Button_Click"/>
             </StackPanel>
+            <TextBlock Visibility="Collapsed" Margin="0,5,0,0" x:Name="tipsnote" FontSize="12" TextWrapping="Wrap" HorizontalAlignment="Center" TextDecorations="Underline">Keep the options at default values unless you know what you're doing.</TextBlock>
             <StackPanel Margin="0,5,0,0" Orientation="Horizontal" HorizontalAlignment="Center">
-                <TextBlock x:Name="tipsnote" FontSize="12" TextWrapping="Wrap" HorizontalAlignment="Center">Keep the options at default values unless you know what you're doing.</TextBlock>
+                <CheckBox x:Name="advancedcheck" IsChecked="False" HorizontalAlignment="Center" Click="advanced_Click">Advanced Mode</CheckBox>
                 <CheckBox x:Name="tipscheck" Margin="5,0,0,0" IsChecked="True" HorizontalAlignment="Right">Tips</CheckBox>
             </StackPanel>
-            <StackPanel x:Name="version" Margin="0,5,0,0" Orientation="Horizontal"  HorizontalAlignment="Center" IsEnabled="False">
+            <StackPanel Visibility="Collapsed" x:Name="version" Margin="0,5,0,0" Orientation="Horizontal"  HorizontalAlignment="Center" IsEnabled="False">
                 <RadioButton Content="1.0.7.0" x:Name="patch7click" Click="version_Click"/>
                 <RadioButton Content="1.0.8.0" x:Name="patch8click" IsChecked="True" Margin="5,0,0,0" Click="version_Click"/>
             </StackPanel>
             <StackPanel x:Name="options" Margin="0,5,0,0" Orientation="Horizontal" HorizontalAlignment="Center" IsEnabled="False">
                 <StackPanel x:Name="downgradeOptionsPanel">
                     <TextBlock FontSize="12" TextWrapping="Wrap" FontWeight="Bold">Downgrade options:</TextBlock>
-                    <CheckBox Content="Full downgrade" x:Name="fullcheckbox" Margin="0,5,0,0" IsChecked="False" Click="full_Click"/>
-                    <CheckBox Content="Downgrade radio" x:Name="radiocheckbox" Margin="0,5,0,0" IsChecked="False" Click="radio_Click"/>
+                    <CheckBox Content="Full downgrade" Visibility="Collapsed" x:Name="fullcheckbox" Margin="0,5,0,0" IsChecked="False" Click="full_Click"/>
+                    <CheckBox Content="Downgrade radio" Visibility="Collapsed" x:Name="radiocheckbox" Margin="0,5,0,0" IsChecked="False" Click="radio_Click"/>
                     <CheckBox Content="Make GFWL-compatible" x:Name="gfwlcheckbox" Margin="0,5,0,0" IsChecked="True" Click="gfwl_Click"/>
-                    <CheckBox Content="Portable GFWL" x:Name="gfwlportablecheckbox" Margin="0,5,0,0" IsChecked="True" Click="gfwlportable_Click"/>
                 </StackPanel>
                 <StackPanel x:Name="modsPanel" Margin="30,0,0,0">
                     <TextBlock FontSize="12" TextWrapping="Wrap" FontWeight="Bold">Mods:</TextBlock>
-                    <CheckBox Content="Steam Achievements" x:Name="achievementscheckbox"  Margin="0,5,0,0" IsChecked="False" IsEnabled="False" Click="steamchieves_Click"/>
-                    <CheckBox Content="XLivelessAddon" x:Name="xlivelesscheckbox" Margin="0,5,0,0" IsChecked="False" IsEnabled="False" Click="xliveless_Click"/>
-                    <CheckBox Content="ZolikaPatch" x:Name="zpatchcheckbox" Margin="0,5,0,0" IsChecked="True" Click="zpatch_Click" IsEnabled="False"/>
+                    <CheckBox Content="Steam Achievements" Visibility="Collapsed" x:Name="achievementscheckbox"  Margin="0,5,0,0" IsChecked="False" IsEnabled="False" Click="steamchieves_Click"/>
+                    <CheckBox Content="XLivelessAddon" Visibility="Collapsed" x:Name="xlivelesscheckbox" Margin="0,5,0,0" IsChecked="False" IsEnabled="False" Click="xliveless_Click"/>
+                    <CheckBox Content="ZolikaPatch" Visibility="Collapsed" x:Name="zpatchcheckbox" Margin="0,5,0,0" IsChecked="True" Click="zpatch_Click" IsEnabled="False"/>
                     <CheckBox Content="FusionFix" x:Name="ffixcheckbox"  Margin="0,5,0,0" IsChecked="True" Click="ffix_Click"/>
                 </StackPanel>
             </StackPanel>
             <StackPanel x:Name="buttons" IsEnabled="False">
-                <Button Content="Backup" x:Name="backupbtn" Margin="0,5,0,0" Width="220" Height="25" Click="backup_Click" FontWeight="DemiBold"/>
-                <Button Content="Install redistributables" x:Name="redistbtn" Margin="0,5,0,0" Width="220" Height="25" Click="redist_Click" FontWeight="SemiBold"/>
                 <Button Content="Downgrade" x:Name="downgradebtn" Margin="0,5,0,0" Width="220" Height="25" Click="downgrade_Click" FontWeight="Bold"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
