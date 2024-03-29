@@ -1,6 +1,5 @@
 using GTAIVDowngradeUtilityWPF.Common;
 using GTAIVDowngradeUtilityWPF.Functions;
-using GTAIVDowngradeUtilityWPF.Functions;
 using Microsoft.Win32;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using NLog;
@@ -11,14 +10,14 @@ using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
-using System.Linq.Expressions;
 using System.Net;
 using System.Net.Http;
+using System.Security.Principal;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 // hi here, i'm an awful coder, so please clean up for me if it really bothers you
 
@@ -48,6 +47,56 @@ namespace GTAIVDowngradeUtilityWPF
             Logger.Info(" Initializing the main window...");
             InitializeComponent();
             Logger.Info(" Main window initialized!");
+
+            var configFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            var settings = configFile.AppSettings.Settings;
+            directory = settings["directory"].Value;
+
+            if (directory != "")
+            {
+                if (AppVersionGrabber.GetFileVersion($"{directory}\\GTAIV.exe").StartsWith("1, 0"))
+                {
+                    Logger.Debug(" Folder contains a retail exe already.");
+                    MessageBox.Show("Your game exe is already downgraded, proceeding to use the tool may produce unexpected results and corrupt the game.");
+                }
+                else { Logger.Debug(" Folder contains an exe of Steam Version."); }
+
+                if (Directory.Exists($"{directory}\\backup")) { backupexists = true; }
+
+                if (directory.Contains("steamapps")) { achievementscheckbox.IsEnabled = true; }
+                else if (directory.Contains("Program Files"))
+                {
+                    if (IsRunningAsAdministrator() == false)
+                    {
+                        MessageBox.Show("Your game is located in Program Files, which requires elevated permissions to be modified.\n\nPressing 'Ok' will restart the app with elevated permissions.");
+                        try
+                        {
+                            var proc = new ProcessStartInfo();
+                            proc.UseShellExecute = true;
+                            proc.WorkingDirectory = Environment.CurrentDirectory;
+                            proc.FileName = Path.Combine(proc.WorkingDirectory, "GTAIVDowngradeUtilityWPF.exe");
+                            proc.Verb = "runas";
+                            Process.Start(proc);
+                        }
+                        catch (Exception error)
+                        {
+                            Logger.Error(error, "Failed to elevate.");
+                            throw;
+                        }
+
+                        Application.Current.Shutdown();
+                    }
+                }
+
+                directorytxt.Text = "Game Directory:";
+                directorytxt.FontWeight = FontWeights.Normal;
+                directorytxt.TextDecorations = null;
+                tipsnote.TextDecorations = TextDecorations.Underline;
+                gamedirectory.Text = directory;
+                options.IsEnabled = true;
+                version.IsEnabled = true;
+                buttons.IsEnabled = true;
+            }
         }
 
         private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
@@ -131,6 +180,15 @@ namespace GTAIVDowngradeUtilityWPF
                 }
             }
             return false;
+        }
+
+        public static bool IsRunningAsAdministrator()
+        {
+            using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
+            {
+                WindowsPrincipal principal = new WindowsPrincipal(identity);
+                return principal.IsInRole(WindowsBuiltInRole.Administrator);
+            }
         }
 
         private void full_Click(object sender, RoutedEventArgs e)
@@ -311,9 +369,39 @@ namespace GTAIVDowngradeUtilityWPF
                         }
                         else { Logger.Debug(" Folder contains an exe of Steam Version."); }
 
+                        var configFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                        var settings = configFile.AppSettings.Settings;
+
+                        settings["directory"].Value = dialog.FileName;
+                        configFile.Save(ConfigurationSaveMode.Modified);
+                        ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
+
                         if (Directory.Exists($"{dialog.FileName}\\backup")) { backupexists = true; }
 
                         if (dialog.FileName.Contains("steamapps")) { achievementscheckbox.IsEnabled = true; }
+                        else if (dialog.FileName.Contains("Program Files"))
+                        {
+                            if (IsRunningAsAdministrator() == false)
+                            {
+                                MessageBox.Show("Your game is located in Program Files, which requires elevated permissions to be modified.\n\nPressing 'Ok' will restart the app with elevated permissions.");
+                                try
+                                {
+                                    var proc = new ProcessStartInfo();
+                                    proc.UseShellExecute = true;
+                                    proc.WorkingDirectory = Environment.CurrentDirectory;
+                                    proc.FileName = Path.Combine(proc.WorkingDirectory, "GTAIVDowngradeUtilityWPF.exe");
+                                    proc.Verb = "runas";
+                                    Process.Start(proc);
+                                }
+                                catch (Exception error)
+                                {
+                                    Logger.Error(error, "Failed to elevate.");
+                                    throw;
+                                }
+
+                                Application.Current.Shutdown();
+                            }
+                        }
 
                         directorytxt.Text = "Game Directory:";
                         directorytxt.FontWeight = FontWeights.Normal;
