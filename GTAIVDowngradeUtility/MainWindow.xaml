@@ -9,13 +9,14 @@
         SizeToContent="WidthAndHeight"
         WindowStartupLocation="CenterScreen"
         Icon="/Assets/ivlogo.png"
+        SnapsToDevicePixels="True"
         ResizeMode="NoResize">
     <Grid>
         <StackPanel Margin="5,5,5,5" Grid.ColumnSpan="2">
             <TextBlock FontSize="28" TextWrapping="Wrap" HorizontalAlignment="Center">Gillian's GTA IV Downgrade Utility</TextBlock>
-            <TextBlock x:Name="directorytxt" HorizontalAlignment="Left" Margin="0,5,0,0" TextWrapping="Wrap" Text="Set your game directory before using:" VerticalAlignment="Top" FontWeight="SemiBold" TextDecorations="Underline"/>
+            <TextBlock x:Name="directorytxt" HorizontalAlignment="Left" Margin="0,0,0,2" TextWrapping="Wrap" Text="Set your game directory before using:" VerticalAlignment="Top" FontWeight="SemiBold" TextDecorations="Underline"/>
             <StackPanel Orientation="Horizontal">
-                <TextBox HorizontalAlignment="Left" x:Name="gamedirectory" Margin="0,2,0,0" VerticalAlignment="Top" Width="354" IsEnabled="False"/>
+                <TextBox HorizontalAlignment="Left" x:Name="gamedirectory" Margin="0,0,0,0" VerticalAlignment="Top" Width="354" IsEnabled="False" Height='20'/>
                 <Button Content="Open..." HorizontalAlignment="Left" Margin="5,0,0,0" VerticalAlignment="Top" Width="60" Click="Button_Click"/>
             </StackPanel>
             <TextBlock Visibility="Collapsed" Margin="0,5,0,0" x:Name="tipsnote" FontSize="12" TextWrapping="Wrap" HorizontalAlignment="Center" TextDecorations="Underline">Keep the options at default values unless you know what you're doing.</TextBlock>
