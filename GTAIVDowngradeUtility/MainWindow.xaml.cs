@@ -10,6 +10,7 @@ using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Principal;
@@ -297,7 +298,7 @@ namespace GTAIVDowngradeUtilityWPF
                 zpatchcheckbox.Visibility = Visibility.Collapsed;
                 tipsnote.Visibility = Visibility.Collapsed;
             }
-            if (tipscheck.IsChecked == true)
+            if (tipscheck.IsChecked == true && advancedcheck.IsChecked == true)
             {
                 Logger.Debug(" Displaying a tip...");
                 MessageBox.Show("Advanced Mode enables all toggles. They're hidden by default as the defaults for these options are fine for majority.\n\nDon't touch these toggles if you have no idea what you're doing and read the tips.");
@@ -675,6 +676,10 @@ namespace GTAIVDowngradeUtilityWPF
             if (Directory.Exists($"{directory}\\plugins"))
             {
                 Directory.Delete($"{directory}\\plugins", true);
+            }
+            foreach (var file in from dll in new string[4] { "launc.dll", "orig_socialclub.dll", "socialclub.dll", "1911.dll" } where File.Exists($"{directory}\\{dll}") select dll)
+            {
+                File.Delete($"{directory}\\{file}");
             }
 
             // actually downgrading now
