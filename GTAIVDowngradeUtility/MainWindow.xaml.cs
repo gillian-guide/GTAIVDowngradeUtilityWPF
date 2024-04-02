@@ -39,10 +39,10 @@ namespace GTAIVDowngradeUtilityWPF
         }
         public MainWindow()
         {
-            if (File.Exists("PPWADowngradeUtilityLog.txt")) { File.Delete("PPWADowngradeUtilityLog.txt"); }
+            if (File.Exists("GTAIVDowngradeUtilityLog.txt")) { File.Delete("GTAIVDowngradeUtilityLog.txt"); }
             NLog.LogManager.Setup().LoadConfiguration(builder =>
             {
-                builder.ForLogger().FilterMinLevel(LogLevel.Debug).WriteToFile(fileName: "PPWADowngradeUtilityLog.txt");
+                builder.ForLogger().FilterMinLevel(LogLevel.Debug).WriteToFile(fileName: "GTAIVDowngradeUtilityLog.txt");
             });
             Logger.Info(" Initializing the main window...");
             InitializeComponent();
@@ -74,7 +74,7 @@ namespace GTAIVDowngradeUtilityWPF
                             var proc = new ProcessStartInfo();
                             proc.UseShellExecute = true;
                             proc.WorkingDirectory = Environment.CurrentDirectory;
-                            proc.FileName = Path.Combine(proc.WorkingDirectory, "PPWADowngradeUtilityWPF.exe");
+                            proc.FileName = Path.Combine(proc.WorkingDirectory, "GTAIVDowngradeUtilityWPF.exe");
                             proc.Verb = "runas";
                             Process.Start(proc);
                         }
