@@ -801,7 +801,15 @@ namespace GTAIVDowngradeUtilityWPF
             if (gfwlcheckbox.IsChecked == true)
             {
                 Logger.Info(" Copying GFWL files...");
-                CopyFolder("Files\\GFWL", directory);
+                CopyFolder("Files\\GFWL\\Shared", directory);
+                if (patch8click.IsChecked == true)
+                {
+                    CopyFolder("Files\\GFWL\\1080", directory);
+                }
+                else
+                {
+                    CopyFolder("Files\\GFWL\\1070", directory);
+                }
             }
 
             // full files
@@ -832,7 +840,7 @@ namespace GTAIVDowngradeUtilityWPF
                             await Task.Delay(500);
                         }
                         downloadfinished = false;
-                        ZipFile.ExtractToDirectory("Files\\1080FullFiles\\1080FullFiles.zip", "Files", true);
+                        ZipFile.ExtractToDirectory("Files\\1080FullFiles\\1080FullFiles.zip", "Files\\1080FullFiles", true);
                         File.Delete("Files\\1080FullFiles\\1080FullFiles.zip");
                     }
                     CopyFolder("Files\\1080FullFiles", directory);
@@ -861,7 +869,7 @@ namespace GTAIVDowngradeUtilityWPF
                             await Task.Delay(500);
                         }
                         downloadfinished = false;
-                        ZipFile.ExtractToDirectory("Files\\1070FullFiles\\1070FullFiles.zip", "Files", true);
+                        ZipFile.ExtractToDirectory("Files\\1070FullFiles\\1070FullFiles.zip", "Files\\1070FullFiles", true);
                         File.Delete("Files\\1070FullFiles\\1070FullFiles.zip");
                     }
                     CopyFolder("Files\\1070FullFiles", directory);
