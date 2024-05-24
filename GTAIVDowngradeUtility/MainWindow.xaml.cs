@@ -677,7 +677,7 @@ namespace GTAIVDowngradeUtilityWPF
             {
                 Directory.Delete($"{directory}\\plugins", true);
             }
-            foreach (var file in from dll in new string[3] { "orig_socialclub.dll", "socialclub.dll", "1911.dll" } where File.Exists($"{directory}\\{dll}") select dll)
+            foreach (var file in from dll in new string[4] {"launc.dll", "orig_socialclub.dll", "socialclub.dll", "1911.dll" } where File.Exists($"{directory}\\{dll}") select dll)
             {
                 File.Delete($"{directory}\\{file}");
             }
