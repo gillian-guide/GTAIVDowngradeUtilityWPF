@@ -33,7 +33,7 @@
                     <TextBlock FontSize="12" TextWrapping="Wrap" FontWeight="Bold">Downgrade options:</TextBlock>
                     <CheckBox Content="Full downgrade" Visibility="Collapsed" x:Name="fullcheckbox" Margin="0,5,0,0" IsChecked="False" Click="full_Click"/>
                     <CheckBox Content="Downgrade radio" Visibility="Collapsed" x:Name="radiocheckbox" Margin="0,5,0,0" IsChecked="False" Click="radio_Click"/>
-                    <CheckBox Content="Make GFWL-compatible" x:Name="gfwlcheckbox" Margin="0,5,0,0" IsChecked="True" Click="gfwl_Click"/>
+                    <CheckBox Content="Make GFWL-compatible" x:Name="gfwlcheckbox" Margin="0,5,0,0" IsChecked="False" Click="gfwl_Click"/>
                     <RadioButton Content="GFWL" x:Name="gfwlmpcheckbox" Visibility="Collapsed" Margin="0,5,0,0" IsChecked="False" Click="gfwlmp_Click"/>
                     <RadioButton Content="GTAC" x:Name="gtaccheckbox" Visibility="Collapsed" Margin="0,5,0,0" IsChecked="False" Click="gtac_Click"/>
                     <RadioButton Content="Both" x:Name="gtacgfwlcheckbox" Visibility="Collapsed" Margin="0,5,0,0" IsChecked="False" Click="gtacgfwl_Click"/>
@@ -59,12 +59,12 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
+                <Button Grid.Column="0" HorizontalAlignment="Left" Content="Switch to multiplayer" x:Name="mpspbtn" Margin="0,0,0,0" Width="120" Height="21" Click="mpsp_Click"/>
+                <TextBlock Grid.Column="1" HorizontalAlignment="Left" Margin="5,0,0,0" TextWrapping="Wrap" VerticalAlignment="Bottom"><Hyperlink NavigateUri="https://gillian-guide.github.io/" RequestNavigate="Hyperlink_RequestNavigate">Visit my Guide</Hyperlink></TextBlock>
+                <TextBlock Grid.Column="2" x:Name="gtrf" HorizontalAlignment="Left" Margin="5,0,0,0" TextWrapping="Wrap" Visibility="Collapsed" VerticalAlignment="Bottom"><Hyperlink NavigateUri="https://discord.gg/gtrf" RequestNavigate="Hyperlink_RequestNavigate">RevIVal Discord Server</Hyperlink></TextBlock>
                 <Button Grid.Column="3" HorizontalAlignment="Right" x:Name="aboutButton" Width="20" Click="aboutButton_Click">
                     <Image Source="../Assets/about.png"></Image>
                 </Button>
-                <Button Grid.Column="0" HorizontalAlignment="Left" Content="Singleplayer" x:Name="mpspbtn" Margin="0,0,0,0" Width="70" Height="21" Click="mpsp_Click"/>
-                <TextBlock Grid.Column="1" HorizontalAlignment="Left" Margin="5,0,0,0" TextWrapping="Wrap" VerticalAlignment="Bottom"><Hyperlink NavigateUri="https://gillian-guide.github.io/" RequestNavigate="Hyperlink_RequestNavigate">Visit my Guide</Hyperlink></TextBlock>
-                <TextBlock Grid.Column="2" x:Name="gtrf" HorizontalAlignment="Left" Margin="5,0,0,0" TextWrapping="Wrap" Visibility="Collapsed" VerticalAlignment="Bottom"><Hyperlink NavigateUri="https://discord.gg/gtrf" RequestNavigate="Hyperlink_RequestNavigate">RevIVal Discord Server</Hyperlink></TextBlock>
             </Grid>
         </StackPanel>
     </Grid>
