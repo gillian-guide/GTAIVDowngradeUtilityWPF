@@ -34,6 +34,9 @@
                     <CheckBox Content="Full downgrade" Visibility="Collapsed" x:Name="fullcheckbox" Margin="0,5,0,0" IsChecked="False" Click="full_Click"/>
                     <CheckBox Content="Downgrade radio" Visibility="Collapsed" x:Name="radiocheckbox" Margin="0,5,0,0" IsChecked="False" Click="radio_Click"/>
                     <CheckBox Content="Make GFWL-compatible" x:Name="gfwlcheckbox" Margin="0,5,0,0" IsChecked="True" Click="gfwl_Click"/>
+                    <RadioButton Content="GFWL" x:Name="gfwlmpcheckbox" Visibility="Collapsed" Margin="0,5,0,0" IsChecked="True" Click="gfwlmp_Click"/>
+                    <RadioButton Content="GTAC" x:Name="gtaccheckbox" Visibility="Collapsed" Margin="0,5,0,0" IsChecked="True" Click="gtac_Click"/>
+                    <RadioButton Content="Both" x:Name="gtacgfwlcheckbox" Visibility="Collapsed" Margin="0,5,0,0" IsChecked="True" Click="gtacgfwl_Click"/>
                 </StackPanel>
                 <StackPanel x:Name="modsPanel" Margin="30,0,0,0">
                     <TextBlock FontSize="12" TextWrapping="Wrap" FontWeight="Bold">Mods:</TextBlock>
@@ -41,19 +44,27 @@
                     <CheckBox Content="XLivelessAddon" Visibility="Collapsed" x:Name="xlivelesscheckbox" Margin="0,5,0,0" IsChecked="False" IsEnabled="False" Click="xliveless_Click"/>
                     <CheckBox Content="ZolikaPatch" Visibility="Collapsed" x:Name="zpatchcheckbox" Margin="0,5,0,0" IsChecked="True" Click="zpatch_Click" IsEnabled="False"/>
                     <CheckBox Content="FusionFix" x:Name="ffixcheckbox"  Margin="0,5,0,0" IsChecked="True" Click="ffix_Click"/>
+                    <CheckBox Content="FusionFix-Min" x:Name="ffixmincheckbox" Visibility="Collapsed" Margin="0,5,0,0" IsChecked="True" Click="ffixmin_Click"/>
                 </StackPanel>
             </StackPanel>
             <StackPanel x:Name="buttons" IsEnabled="False">
                 <Button Content="Downgrade" x:Name="downgradebtn" Margin="0,5,0,0" Width="220" Height="25" Click="downgrade_Click" FontWeight="Bold"/>
             </StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                <TextBlock HorizontalAlignment="Left" Margin="0,0,0,0" TextWrapping="Wrap" VerticalAlignment="Bottom"><Hyperlink NavigateUri="https://gillian-guide.github.io/" RequestNavigate="Hyperlink_RequestNavigate">Visit my Guide</Hyperlink></TextBlock>
-                <TextBlock HorizontalAlignment="Center" Margin="10,0,0,0" TextWrapping="Wrap" VerticalAlignment="Bottom"><Hyperlink NavigateUri="https://discord.gg/gtrf" RequestNavigate="Hyperlink_RequestNavigate">RevIVal Discord Server</Hyperlink></TextBlock>
-                <TextBlock HorizontalAlignment="Right" Margin="67,0,0,0" TextWrapping="Wrap" VerticalAlignment="Bottom"><Hyperlink NavigateUri="https://github.com/gillian-guide/GTAIVDowngradeUtilityWPF" RequestNavigate="Hyperlink_RequestNavigate">This tool is open source</Hyperlink></TextBlock>
-                <Button x:Name="aboutButton" Margin="3,0,0,0" Width="20" HorizontalAlignment="Right" Click="aboutButton_Click">
+            <Grid Margin="0,5,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="3" HorizontalAlignment="Right" x:Name="aboutButton" Width="20" Click="aboutButton_Click">
                     <Image Source="../Assets/about.png"></Image>
                 </Button>
-            </StackPanel>
+                <Button Grid.Column="0" HorizontalAlignment="Left" Content="Singleplayer" x:Name="mpspbtn" Margin="0,0,0,0" Width="70" Height="21" Click="mpsp_Click"/>
+                <TextBlock Grid.Column="1" HorizontalAlignment="Left" Margin="5,0,0,0" TextWrapping="Wrap" VerticalAlignment="Bottom"><Hyperlink NavigateUri="https://gillian-guide.github.io/" RequestNavigate="Hyperlink_RequestNavigate">Visit my Guide</Hyperlink></TextBlock>
+                <TextBlock Grid.Column="2" HorizontalAlignment="Left" Margin="5,0,0,0" TextWrapping="Wrap" Visibility="Collapsed" VerticalAlignment="Bottom"><Hyperlink NavigateUri="https://discord.gg/gtrf" RequestNavigate="Hyperlink_RequestNavigate">RevIVal Discord Server</Hyperlink></TextBlock>
+            </Grid>
         </StackPanel>
     </Grid>
 </Window>
