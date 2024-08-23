@@ -214,6 +214,7 @@ namespace GTAIVDowngradeUtilityWPF
                 gtaccheckbox.IsChecked = false;
                 gtacgfwlcheckbox.IsChecked = false;
                 ffixmincheckbox.IsChecked = false;
+                gtrf.Visibility = Visibility.Collapsed;
             }
             else
             {
@@ -228,6 +229,7 @@ namespace GTAIVDowngradeUtilityWPF
                 zpatchcheckbox.Visibility = Visibility.Collapsed;
                 ffixmincheckbox.Visibility = Visibility.Visible;
                 gfwlmpcheckbox.IsChecked = true;
+                gtrf.Visibility = Visibility.Visible;
             }
         }
 
@@ -310,6 +312,15 @@ namespace GTAIVDowngradeUtilityWPF
             {
                 Logger.Debug(" Displaying a tip...");
                 MessageBox.Show("This option installs the FusionFix-GFWLMin patch, which overall increases the stability in Multiplayer by disabling anything that would only apply to Singleplayer but never Multiplayer.");
+            }
+        }
+
+        private void zmenu_Click(object sender, RoutedEventArgs e)
+        {
+            if (tipscheck.IsChecked == true)
+            {
+                Logger.Debug(" Displaying a tip...");
+                MessageBox.Show("This option installs ZMenu, a trainer commonly used in Multiplayer.");
             }
         }
 
@@ -819,7 +830,7 @@ namespace GTAIVDowngradeUtilityWPF
                 }
 
                 // ultimate asi loader
-                if (zpatchcheckbox.IsChecked == true || ffixcheckbox.IsChecked == true || achievementscheckbox.IsChecked == true || gfwlcheckbox.IsChecked == true || xlivelesscheckbox.IsChecked == true)
+                if (zpatchcheckbox.IsChecked == true || ffixcheckbox.IsChecked == true || achievementscheckbox.IsChecked == true || xlivelesscheckbox.IsChecked == true || zmenucheckbox.IsChecked == true)
                 {
                     Logger.Info(" Installing Ultimate ASI Loader...");
                     string downloadedual = settings["ultimate-asi-loader"].Value;
@@ -862,7 +873,7 @@ namespace GTAIVDowngradeUtilityWPF
 
                     }
                     Logger.Debug(" Renaming unmatching UAL names if exist...");
-                    if (gfwlcheckbox.IsChecked == false || (sp == false && gfwlmpcheckbox.IsChecked == false || gtacgfwlcheckbox.IsChecked == false))
+                    if (gfwlcheckbox.IsChecked == false || (sp == false && (gfwlmpcheckbox.IsChecked == false && gtacgfwlcheckbox.IsChecked == false)))
                     {
                         if (File.Exists("Files\\Shared\\dinput8.dll"))
                         {
@@ -877,7 +888,7 @@ namespace GTAIVDowngradeUtilityWPF
                             CopyFolder("Files\\XLivelessAddon", directory);
                         }
                     }
-                    else if (gfwlcheckbox.IsChecked == true || (sp == false && gfwlmpcheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true))
+                    else if (gfwlcheckbox.IsChecked == true || (sp == false && (gfwlmpcheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true)))
                     {
                         if (File.Exists("Files\\Shared\\xlive.dll"))
                         {
@@ -1018,50 +1029,52 @@ namespace GTAIVDowngradeUtilityWPF
                     File.Copy("Files\\ZolikaPatch\\ZolikaPatch.asi", $"{directory}\\ZolikaPatch.asi", true);
 
                     bool gfwl = (gfwlcheckbox.IsChecked == true || gfwlmpcheckbox.IsChecked == true);
-                switch (ffixcheckbox.IsChecked, gfwl)
-                {
-                    case (true, true):
-                        {
-                            if (sp)
+                    Logger.Info(gfwl);
+                    Logger.Info(ffixcheckbox.IsChecked);
+                    switch (ffixcheckbox.IsChecked, gfwl)
+                    {
+                        case (true, true):
                             {
-                                File.Copy("Files\\ZolikaPatch\\ZolikaPatch-FFix-GFWL.ini", $"{directory}\\ZolikaPatch.ini", true);
+                                if (sp == true || gfwlmpcheckbox.IsChecked == true)
+                                {
+                                    File.Copy("Files\\ZolikaPatch\\ZolikaPatch-FFix-GFWL.ini", $"{directory}\\ZolikaPatch.ini", true);
+                                }
+                                else if (gtaccheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true)
+                                {
+                                    File.Copy("Files\\ZolikaPatch\\ZolikaPatch-NoFFix-GFWL.ini", $"{directory}\\ZolikaPatch.ini", true);
+                                }
+                                break;
                             }
-                            else if (gtaccheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true)
-                            {
-                                File.Copy("Files\\ZolikaPatch\\ZolikaPatch-NoFFix-GFWL.ini", $"{directory}\\ZolikaPatch.ini", true);
-                            }
-                            break;
-                        }
-                    case (false, true):
-                        {
-                            File.Copy("Files\\ZolikaPatch\\ZolikaPatch-NoFFix-GFWL.ini", $"{directory}\\ZolikaPatch.ini", true);
-                            break;
-                        }
-                    case (true, false):
-                        {
-                            if (sp)
-                            {
-                                File.Copy("Files\\ZolikaPatch\\ZolikaPatch-FFix.ini", $"{directory}\\ZolikaPatch.ini", true);
-                            }
-                            else if (gtaccheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true)
+                        case (false, true):
                             {
                                 File.Copy("Files\\ZolikaPatch\\ZolikaPatch-NoFFix-GFWL.ini", $"{directory}\\ZolikaPatch.ini", true);
+                                break;
                             }
-                            break;
-                        }
-                    case (false, false):
-                        {
-                            if (sp)
+                        case (true, false):
                             {
-                                File.Copy("Files\\ZolikaPatch\\ZolikaPatch-NoFFix.ini", $"{directory}\\ZolikaPatch.ini", true);
+                                if (sp == true || gfwlmpcheckbox.IsChecked == false)
+                                {
+                                    File.Copy("Files\\ZolikaPatch\\ZolikaPatch-FFix.ini", $"{directory}\\ZolikaPatch.ini", true);
+                                }
+                                else if (gtaccheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true)
+                                {
+                                    File.Copy("Files\\ZolikaPatch\\ZolikaPatch-NoFFix-GFWL.ini", $"{directory}\\ZolikaPatch.ini", true);
+                                }
+                                break;
                             }
-                            else if (gtaccheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true)
+                        case (false, false):
                             {
-                                File.Copy("Files\\ZolikaPatch\\ZolikaPatch-NoFFix-GFWL.ini", $"{directory}\\ZolikaPatch.ini", true);
+                                if (sp)
+                                {
+                                    File.Copy("Files\\ZolikaPatch\\ZolikaPatch-NoFFix.ini", $"{directory}\\ZolikaPatch.ini", true);
+                                }
+                                else if (gtaccheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true)
+                                {
+                                    File.Copy("Files\\ZolikaPatch\\ZolikaPatch-NoFFix-GFWL.ini", $"{directory}\\ZolikaPatch.ini", true);
+                                }
+                                break;
                             }
-                            break;
-                        }
-                }
+                    }
                 }
                 Logger.Info(" Moving over GTAIV.exe...");
                 if (patch8click.IsChecked == true)
@@ -1076,7 +1089,7 @@ namespace GTAIVDowngradeUtilityWPF
             // fusionfix
             if (ffixcheckbox.IsChecked == true)
             {
-                if (gtaccheckbox.IsChecked == false || gtacgfwlcheckbox.IsChecked == false)
+                if (sp == true || (sp == false && (gtaccheckbox.IsChecked == false && gtacgfwlcheckbox.IsChecked == false)))
                 {
                     Logger.Info(" Installing FusionFix...");
                     string downloadedff = settings["fusionfix"].Value;
@@ -1185,12 +1198,16 @@ namespace GTAIVDowngradeUtilityWPF
                     CopyFolder("Files\\ShaderFixes\\", $"{directory}");
                 }
             }
-                Logger.Info(" Successfully downgraded!");
-                MessageBox.Show("Your game has been downgraded in accordance with selected options!");
-                downgradebtn.Content = "Downgrade";
-                options.IsEnabled = true;
-                version.IsEnabled = true;
-                buttons.IsEnabled = true;
+            if (zmenucheckbox.IsChecked == true)
+            {
+                CopyFolder("Files\\ShaderFixes\\", $"{directory}");
+            }
+            Logger.Info(" Successfully downgraded!");
+            MessageBox.Show("Your game has been downgraded in accordance with selected options!");
+            downgradebtn.Content = "Downgrade";
+            options.IsEnabled = true;
+            version.IsEnabled = true;
+            buttons.IsEnabled = true;
             }
         }
     }
