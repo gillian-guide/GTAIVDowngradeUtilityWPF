@@ -776,7 +776,7 @@ namespace GTAIVDowngradeUtilityWPF
                     }
                     var firstResponseBodyredist = await firstResponseredist.Content.ReadAsStringAsync();
                     Directory.CreateDirectory("Files\\Redist");
-                    var downloadUrlredist = JsonDocument.Parse(firstResponseBodyredist).RootElement.GetProperty("assets")[1].GetProperty("browser_download_url").GetString();
+                    var downloadUrlredist = JsonDocument.Parse(firstResponseBodyredist).RootElement.GetProperty("assets")[4].GetProperty("browser_download_url").GetString();
                     Download(downloadUrlredist!, "Files", "Redist.zip", "redistributables");
                     while (!downloadfinished)
                     {
@@ -923,7 +923,7 @@ namespace GTAIVDowngradeUtilityWPF
                     throw;
                 }
                 var firstResponseBodyshared = await firstResponseshared.Content.ReadAsStringAsync();
-                var downloadUrlshared = JsonDocument.Parse(firstResponseBodyshared).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
+                var downloadUrlshared = JsonDocument.Parse(firstResponseBodyshared).RootElement.GetProperty("assets")[2].GetProperty("browser_download_url").GetString();
                 Download(downloadUrlshared!, "Files", "BaseAssets.zip", "Base assets");
                 while (!downloadfinished)
                 {
@@ -964,7 +964,7 @@ namespace GTAIVDowngradeUtilityWPF
                         HttpResponseMessage firstResponse1080;
                         try
                         {
-                            firstResponse1080 = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIVFullDowngradeAssets/releases/135442415");
+                            firstResponse1080 = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIVFullDowngradeAssets/releases/135442404");
                             firstResponse1080.EnsureSuccessStatusCode();
                         }
                         catch (Exception ex)
@@ -973,7 +973,7 @@ namespace GTAIVDowngradeUtilityWPF
                             throw;
                         }
                         var firstResponseBody1080 = await firstResponse1080.Content.ReadAsStringAsync();
-                        var downloadUrl1080 = JsonDocument.Parse(firstResponseBody1080).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
+                        var downloadUrl1080 = JsonDocument.Parse(firstResponseBody1080).RootElement.GetProperty("assets")[1].GetProperty("browser_download_url").GetString();
                         Download(downloadUrl1080!, "Files\\1080FullFiles", "1080FullFiles.zip", "Full files");
                         while (!downloadfinished)
                         {
@@ -993,7 +993,7 @@ namespace GTAIVDowngradeUtilityWPF
                         HttpResponseMessage firstResponse1070;
                         try
                         {
-                            firstResponse1070 = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIVFullDowngradeAssets/releases/135442418");
+                            firstResponse1070 = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIVFullDowngradeAssets/releases/135442404");
                             firstResponse1070.EnsureSuccessStatusCode();
                         }
                         catch (Exception ex)
@@ -1193,6 +1193,32 @@ namespace GTAIVDowngradeUtilityWPF
                 }
                 if (zmenucheckbox.IsChecked == true)
                 {
+                    if (!Directory.Exists("Files\\ZMenu"))
+                    {
+                        Directory.CreateDirectory("Files\\ZMenu");
+                        HttpResponseMessage firstResponsezmenu;
+                        try
+                        {
+                            firstResponsezmenu = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIVFullDowngradeAssets/releases/135442404");
+                            firstResponsezmenu.EnsureSuccessStatusCode();
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Error(ex, "Error getting latest release, probably ratelimited");
+                            throw;
+                        }
+                        var firstResponseBodyzmenu = await firstResponsezmenu.Content.ReadAsStringAsync();
+                        var downloadUrlzmenu = JsonDocument.Parse(firstResponseBodyzmenu).RootElement.GetProperty("assets")[3].GetProperty("browser_download_url").GetString();
+                        Download(downloadUrlzmenu!, "Files\\ZMenu", "ZMenu.zip", "ZMenu");
+                        while (!downloadfinished)
+                        {
+                            await Task.Delay(500);
+                        }
+                        downloadfinished = false;
+                        ZipFile.ExtractToDirectory("Files\\ZMenu\\ZMenu.zip", "Files\\ZMenu", true);
+                        File.Delete("Files\\ZMenu\\ZMenu.zip");
+                    }
+
                     CopyFolder("Files\\ZMenu\\", $"{directory}");
                 }
                 Logger.Info(" Successfully downgraded!");
