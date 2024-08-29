@@ -740,6 +740,7 @@ namespace GTAIVDowngradeUtilityWPF
                 }
                 else if (ffixcheckbox.IsChecked == false && File.Exists("Files\\RadioDowngrade\\install.bat"))
                 {
+                    Logger.Info(" Launched the install.bat from radio downgrader...");
                     CopyFolder("Files\\RadioDowngrade", directory);
                     ProcessStartInfo psirad = new ProcessStartInfo
                     {
@@ -757,7 +758,7 @@ namespace GTAIVDowngradeUtilityWPF
             bool isvc = RedistributablePackage.IsInstalled(RedistributablePackageVersion.VC2005x86);
             bool isgfwl = IsGFWLInstalled();
 
-            if (!isvc || (!isgfwl && gfwlcheckbox.IsChecked == true))
+            if (!isvc || (!isgfwl && (gfwlcheckbox.IsChecked == true || (sp == false && (gfwlmpcheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true)))))
             {
                 Logger.Info(" Some redistributable not found...");
                 if (!Directory.Exists("Files\\Redist"))
@@ -783,8 +784,10 @@ namespace GTAIVDowngradeUtilityWPF
                         await Task.Delay(500);
                     }
                     downloadfinished = false;
+                    Logger.Info(" Extracting redistributables...");
                     ZipFile.ExtractToDirectory("Files\\Redist.zip", "Files\\Redist", true);
                     File.Delete("Files\\Redist.zip");
+                    Logger.Info(" Redistributables extracted.");
                 }
                 if (!isvc)
                 {
@@ -800,7 +803,11 @@ namespace GTAIVDowngradeUtilityWPF
                     vcredist.Start();
                     await vcredist.WaitForExitAsync();
                 }
-                if (!isgfwl && gfwlcheckbox.IsChecked == true) { Logger.Info(" Installing GFWL redistributables..."); await Process.Start($"Files\\Redist\\gfwlivesetup.exe").WaitForExitAsync(); }
+                if (!isgfwl && (gfwlcheckbox.IsChecked == true || (sp == false && (gfwlmpcheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true)))) { Logger.Info(" Installing GFWL redistributables..."); await Process.Start($"Files\\Redist\\gfwlivesetup.exe").WaitForExitAsync(); }
+            }
+            else
+            {
+                Logger.Info(" Redistributables are all good.");
             }
 
             // removing any scripts because they can break shit and we don't want that
@@ -865,6 +872,7 @@ namespace GTAIVDowngradeUtilityWPF
                         await Task.Delay(500);
                     }
                     downloadfinished = false;
+                    Logger.Info(" Extracting UAL...");
                     ZipFile.ExtractToDirectory("Files\\Shared\\Ultimate-ASI-Loader.zip", "Files\\Shared\\", true);
                     File.Delete("Files\\Shared\\Ultimate-ASI-Loader.zip");
                     settings["ultimate-asi-loader"].Value = latestual;
@@ -873,7 +881,7 @@ namespace GTAIVDowngradeUtilityWPF
                     Logger.Debug(" Edited the value in the config.");
 
                 }
-                Logger.Debug(" Renaming unmatching UAL names if exist...");
+                Logger.Info(" Renaming unmatching UAL names if exist...");
                 if (gfwlcheckbox.IsChecked == false || (sp == false && (gfwlmpcheckbox.IsChecked == false && gtacgfwlcheckbox.IsChecked == false)))
                 {
                     if (File.Exists("Files\\Shared\\dinput8.dll"))
@@ -902,7 +910,7 @@ namespace GTAIVDowngradeUtilityWPF
                 }
                 if (File.Exists($"{directory}\\dsound.dll"))
                 {
-                    Logger.Debug(" Removing dsound.dll from the game folder to avoid incompatibility.");
+                    Logger.Info(" Removing dsound.dll from the game folder to avoid incompatibility...");
                     File.Delete($"{directory}\\dsound.dll");
                 }
             }
@@ -930,15 +938,16 @@ namespace GTAIVDowngradeUtilityWPF
                     await Task.Delay(500);
                 }
                 downloadfinished = false;
+                Logger.Info(" Extracting shared files...");
                 ZipFile.ExtractToDirectory("Files\\BaseAssets.zip", "Files", true);
                 File.Delete("Files\\BaseAssets.zip");
             }
 
-            Logger.Info(" Copying shared files...");
+            Logger.Info(" Copying shared files (including UAL)...");
             CopyFolder("Files\\Shared", directory);
 
             // GFWL files
-            if (gfwlcheckbox.IsChecked == true)
+            if (gfwlcheckbox.IsChecked == true || (sp == false && (gfwlmpcheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true)))
             {
                 Logger.Info(" Copying GFWL files...");
                 CopyFolder("Files\\GFWL\\Shared", directory);
@@ -955,7 +964,7 @@ namespace GTAIVDowngradeUtilityWPF
             // full files
             if (fullcheckbox.IsChecked == true)
             {
-                Logger.Info(" Downloading and copying full files...");
+                Logger.Info(" Downloading full files...");
                 if (patch8click.IsChecked == true)
                 {
                     if (!Directory.Exists("Files\\1080FullFiles"))
@@ -980,9 +989,11 @@ namespace GTAIVDowngradeUtilityWPF
                             await Task.Delay(500);
                         }
                         downloadfinished = false;
+                        Logger.Info(" Extracting full files...");
                         ZipFile.ExtractToDirectory("Files\\1080FullFiles\\1080FullFiles.zip", "Files\\1080FullFiles", true);
                         File.Delete("Files\\1080FullFiles\\1080FullFiles.zip");
                     }
+                    Logger.Info(" Copying full files...");
                     CopyFolder("Files\\1080FullFiles", directory);
                 }
                 else
@@ -1009,9 +1020,11 @@ namespace GTAIVDowngradeUtilityWPF
                             await Task.Delay(500);
                         }
                         downloadfinished = false;
+                        Logger.Info(" Extracting full files...");
                         ZipFile.ExtractToDirectory("Files\\1070FullFiles\\1070FullFiles.zip", "Files\\1070FullFiles", true);
                         File.Delete("Files\\1070FullFiles\\1070FullFiles.zip");
                     }
+                    Logger.Info(" Copying full files...");
                     CopyFolder("Files\\1070FullFiles", directory);
                 }
             }
@@ -1084,7 +1097,7 @@ namespace GTAIVDowngradeUtilityWPF
                 {
                     if (sp == true || (sp == false && gtaccheckbox.IsChecked == false))
                     {
-                        Logger.Info(" Installing FusionFix...");
+                        Logger.Info(" Not GTA Connected install: installing FusionFix...");
                         string downloadedff = settings["fusionfix"].Value;
                         if (!File.Exists("Files\\FusionFix\\GTAIV.EFLC.FusionFix.asi"))
                         {
@@ -1096,6 +1109,7 @@ namespace GTAIVDowngradeUtilityWPF
                         HttpResponseMessage firstResponseff;
                         try
                         {
+                            Logger.Debug(" Receiving latest release...");
                             firstResponseff = await httpClient.GetAsync("https://api.github.com/repos/ThirteenAG/GTAIV.EFLC.FusionFix/releases/latest");
                             firstResponseff.EnsureSuccessStatusCode();
                         }
@@ -1120,9 +1134,10 @@ namespace GTAIVDowngradeUtilityWPF
                                 await Task.Delay(500);
                             }
                             downloadfinished = false;
+                            Logger.Info(" Extracting FusionFix...");
                             ZipFile.ExtractToDirectory("Files\\FusionFix\\FusionFix.zip", "Files\\FusionFix\\", true);
-                            File.Delete("Files\\FusionFix\\dinput8.dll");
                             File.Delete("Files\\FusionFix\\FusionFix.zip");
+                            File.Delete("Files\\FusionFix\\dinput8.dll");
                             File.Move("Files\\FusionFix\\plugins\\GTAIV.EFLC.FusionFix.asi", "Files\\FusionFix\\GTAIV.EFLC.FusionFix.asi", true);
                             File.Move("Files\\FusionFix\\plugins\\GTAIV.EFLC.FusionFix.ini", "Files\\FusionFix\\GTAIV.EFLC.FusionFix.ini", true);
                             Directory.Delete("Files\\FusionFix\\plugins");
@@ -1131,7 +1146,7 @@ namespace GTAIVDowngradeUtilityWPF
                             ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
                             Logger.Debug(" Edited the value in the config.");
                         }
-                        if (gfwlcheckbox.IsChecked == true || (sp == false && gfwlmpcheckbox.IsChecked == true))
+                        if (gfwlcheckbox.IsChecked == true || (sp == false && (gfwlmpcheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true)))
                         {
                             if (sp == false && ffixmincheckbox.IsChecked == true)
                             {
@@ -1155,6 +1170,7 @@ namespace GTAIVDowngradeUtilityWPF
                                     await Task.Delay(500);
                                 }
                                 downloadfinished = false;
+                                Logger.Info(" Extracting GFWL-Min patch...");
                                 ZipFile.ExtractToDirectory("Files\\FusionFix\\FusionFix-GFWLMin.zip", "Files\\FusionFix", true);
                                 File.Delete("Files\\FusionFix\\FusionFix-GFWLMin.zip");
                             }
@@ -1180,14 +1196,44 @@ namespace GTAIVDowngradeUtilityWPF
                                     await Task.Delay(500);
                                 }
                                 downloadfinished = false;
+                                Logger.Info(" Extracting GFWL patch...");
                                 ZipFile.ExtractToDirectory("Files\\FusionFix\\FusionFix-GFWL.zip", "Files\\FusionFix", true);
                                 File.Delete("Files\\FusionFix\\FusionFix-GFWL.zip");
                             }
                         }
+                        Logger.Info(" Copying FusionFix & the patches if downloaded any...");
                         CopyFolder("Files\\FusionFix\\", $"{directory}");
                     }
                     else
                     {
+                        Logger.Info(" GTA Connected install: installing Shader Fixes...");
+                        if (!Directory.Exists("Files\\ShaderFixes"))
+                        {
+                            Logger.Info(" Downloading Shader Fixes...");
+                            Directory.CreateDirectory("Files\\ShaderFixes");
+                            HttpResponseMessage firstResponse1070;
+                            try
+                            {
+                                firstResponse1070 = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIVFullDowngradeAssets/releases/135442404");
+                                firstResponse1070.EnsureSuccessStatusCode();
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.Error(ex, "Error getting latest release, probably ratelimited");
+                                throw;
+                            }
+                            var firstResponseBody1070 = await firstResponse1070.Content.ReadAsStringAsync();
+                            var downloadUrl1070 = JsonDocument.Parse(firstResponseBody1070).RootElement.GetProperty("assets")[5].GetProperty("browser_download_url").GetString();
+                            Download(downloadUrl1070!, "Files\\ShaderFixes", "ShaderFixes.zip", "Shader Fixes");
+                            while (!downloadfinished)
+                            {
+                                await Task.Delay(500);
+                            }
+                            downloadfinished = false;
+                            ZipFile.ExtractToDirectory("Files\\ShaderFixes\\ShaderFixes.zip", "Files\\ShaderFixes", true);
+                            File.Delete("Files\\ShaderFixes\\ShaderFixes.zip");
+                        }
+                        Logger.Info(" Copying Shader Fixes...");
                         CopyFolder("Files\\ShaderFixes\\", $"{directory}");
                     }
                 }
@@ -1195,6 +1241,7 @@ namespace GTAIVDowngradeUtilityWPF
                 {
                     if (!Directory.Exists("Files\\ZMenu"))
                     {
+                        Logger.Info(" Downloading ZMenu...");
                         Directory.CreateDirectory("Files\\ZMenu");
                         HttpResponseMessage firstResponsezmenu;
                         try
@@ -1215,10 +1262,11 @@ namespace GTAIVDowngradeUtilityWPF
                             await Task.Delay(500);
                         }
                         downloadfinished = false;
+                        Logger.Info(" Extracting ZMenu...");
                         ZipFile.ExtractToDirectory("Files\\ZMenu\\ZMenu.zip", "Files\\ZMenu", true);
                         File.Delete("Files\\ZMenu\\ZMenu.zip");
                     }
-
+                    Logger.Info(" Copying ZMenu...");
                     CopyFolder("Files\\ZMenu\\", $"{directory}");
                 }
                 Logger.Info(" Successfully downgraded!");
