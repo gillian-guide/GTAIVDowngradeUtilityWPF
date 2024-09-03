@@ -26,10 +26,13 @@ namespace GTAIVDowngradeUtilityWPF
 {
     public partial class MainWindow : Window
     {
+        #region Variables
         bool backupexists = false;
         bool sp = true;
         string directory;
+        #endregion
 
+        #region MainWindow
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
         [STAThread]
@@ -42,16 +45,21 @@ namespace GTAIVDowngradeUtilityWPF
         public MainWindow()
         {
             if (File.Exists("GTAIVDowngradeUtilityLog.txt")) { File.Delete("GTAIVDowngradeUtilityLog.txt"); }
+
+            Configuration configFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            KeyValueConfigurationCollection settings = configFile.AppSettings.Settings;
+
+            string debugvalue = settings["debug-logs"].Value;
+            LogLevel debug = debugvalue.Equals("true", StringComparison.OrdinalIgnoreCase) ? LogLevel.Debug : LogLevel.Info;
+
             NLog.LogManager.Setup().LoadConfiguration(builder =>
             {
-                builder.ForLogger().FilterMinLevel(LogLevel.Debug).WriteToFile(fileName: "GTAIVDowngradeUtilityLog.txt");
+                builder.ForLogger().FilterMinLevel(debug).WriteToFile(fileName: "GTAIVDowngradeUtilityLog.txt");
             });
             Logger.Info(" Initializing the main window...");
             InitializeComponent();
             Logger.Info(" Main window initialized!");
 
-            var configFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            var settings = configFile.AppSettings.Settings;
             directory = settings["directory"].Value;
 
             if (directory != "")
@@ -100,6 +108,79 @@ namespace GTAIVDowngradeUtilityWPF
                 buttons.IsEnabled = true;
             }
         }
+        private void mpsp_Click(object sender, RoutedEventArgs e)
+        {
+            if (sp == false)
+            {
+                mpspbtn.Content = "Switch to multiplayer";
+                sp = true;
+                gfwlcheckbox.Visibility = Visibility.Visible;
+                gfwlmpcheckbox.Visibility = Visibility.Collapsed;
+                gtaccheckbox.Visibility = Visibility.Collapsed;
+                gtacgfwlcheckbox.Visibility = Visibility.Collapsed;
+                ffixmincheckbox.Visibility = Visibility.Collapsed;
+                if (advancedcheck.IsChecked == true)
+                {
+                    xlivelesscheckbox.Visibility = Visibility.Visible;
+                    version.Visibility = Visibility.Visible;
+                }
+                zpatchcheckbox.IsEnabled = true;
+                gfwlmpcheckbox.IsChecked = false;
+                gtaccheckbox.IsChecked = false;
+                gtacgfwlcheckbox.IsChecked = false;
+                ffixmincheckbox.IsChecked = false;
+                gtrf.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                mpspbtn.Content = "Switch to singleplayer";
+                sp = false;
+                gfwlcheckbox.Visibility = Visibility.Collapsed;
+                gfwlmpcheckbox.Visibility = Visibility.Visible;
+                gtaccheckbox.Visibility = Visibility.Visible;
+                gtacgfwlcheckbox.Visibility = Visibility.Visible;
+                xlivelesscheckbox.Visibility = Visibility.Collapsed;
+                version.Visibility = Visibility.Collapsed;
+                zpatchcheckbox.IsEnabled = false;
+                zpatchcheckbox.IsChecked = true;
+                ffixmincheckbox.Visibility = Visibility.Visible;
+                gfwlmpcheckbox.IsChecked = true;
+                gtrf.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void advanced_Click(object sender, RoutedEventArgs e)
+        {
+            Logger.Debug(" User toggled advanced mode.");
+            if (advancedcheck.IsChecked == true)
+            {
+                if (sp == true)
+                {
+                    version.Visibility = Visibility.Visible;
+                    xlivelesscheckbox.Visibility = Visibility.Visible;
+                }
+                fullcheckbox.Visibility = Visibility.Visible;
+                zpatchcheckbox.Visibility = Visibility.Visible;
+                radiocheckbox.Visibility = Visibility.Visible;
+                achievementscheckbox.Visibility = Visibility.Visible;
+                tipsnote.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                version.Visibility = Visibility.Collapsed;
+                fullcheckbox.Visibility = Visibility.Collapsed;
+                radiocheckbox.Visibility = Visibility.Collapsed;
+                achievementscheckbox.Visibility = Visibility.Collapsed;
+                xlivelesscheckbox.Visibility = Visibility.Collapsed;
+                zpatchcheckbox.Visibility = Visibility.Collapsed;
+                tipsnote.Visibility = Visibility.Collapsed;
+            }
+            if (tipscheck.IsChecked == true && advancedcheck.IsChecked == true)
+            {
+                Logger.Debug(" Displaying a tip...");
+                MessageBox.Show("Advanced Mode enables all toggles. They're hidden by default as the defaults for these options are fine for majority.\n\nDon't touch these toggles if you have no idea what you're doing and read the tips.");
+            }
+        }
 
         private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
         {
@@ -113,6 +194,9 @@ namespace GTAIVDowngradeUtilityWPF
             };
             Process.Start(psi);
         }
+        #endregion
+
+        #region Helpers
         private static void Empty(System.IO.DirectoryInfo directory)
         {
             foreach (System.IO.FileInfo file in directory.GetFiles()) { file.Delete(); }
@@ -148,16 +232,6 @@ namespace GTAIVDowngradeUtilityWPF
             return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString()
                 ?? String.Empty;
         }
-        private void version_Click(object sender, RoutedEventArgs e)
-        {
-            Logger.Debug(" User toggled game version.");
-            if (tipscheck.IsChecked == true)
-            {
-                Logger.Debug(" Displaying a tip...");
-                MessageBox.Show("1.0.8.0 is generally a better patch, as it fixes a few bugs, including VRAM detection and a few 60 FPS issues.\n\nYou may want to prefer 1.0.7.0 if your specific mods (LCPDFR, ScriptHookDotNet mods) don't support 1.0.8.0, but generally it's recommended to keep it at 1.0.8.0.");
-            }
-
-        }
 
         public bool IsGFWLInstalled()
         {
@@ -192,164 +266,16 @@ namespace GTAIVDowngradeUtilityWPF
                 return principal.IsInRole(WindowsBuiltInRole.Administrator);
             }
         }
+        #endregion
 
-        private void mpsp_Click(object sender, RoutedEventArgs e)
-        {
-            if (sp == false)
-            {
-                mpspbtn.Content = "Switch to multiplayer";
-                sp = true;
-                gfwlcheckbox.Visibility = Visibility.Visible;
-                gfwlmpcheckbox.Visibility = Visibility.Collapsed;
-                gtaccheckbox.Visibility = Visibility.Collapsed;
-                gtacgfwlcheckbox.Visibility = Visibility.Collapsed;
-                ffixmincheckbox.Visibility = Visibility.Collapsed;
-                if (advancedcheck.IsChecked == true)
-                {
-                    xlivelesscheckbox.Visibility = Visibility.Visible;
-                    version.Visibility = Visibility.Visible;
-                    zpatchcheckbox.Visibility = Visibility.Visible;
-                }
-                gfwlmpcheckbox.IsChecked = false;
-                gtaccheckbox.IsChecked = false;
-                gtacgfwlcheckbox.IsChecked = false;
-                ffixmincheckbox.IsChecked = false;
-                gtrf.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                mpspbtn.Content = "Switch to singleplayer";
-                sp = false;
-                gfwlcheckbox.Visibility = Visibility.Collapsed;
-                gfwlmpcheckbox.Visibility = Visibility.Visible;
-                gtaccheckbox.Visibility = Visibility.Visible;
-                gtacgfwlcheckbox.Visibility = Visibility.Visible;
-                xlivelesscheckbox.Visibility = Visibility.Collapsed;
-                version.Visibility = Visibility.Collapsed;
-                zpatchcheckbox.Visibility = Visibility.Collapsed;
-                ffixmincheckbox.Visibility = Visibility.Visible;
-                gfwlmpcheckbox.IsChecked = true;
-                gtrf.Visibility = Visibility.Visible;
-            }
-        }
-
-        private void full_Click(object sender, RoutedEventArgs e)
-        {
-            if (fullcheckbox.IsChecked == true)
-            {
-                zpatchcheckbox.IsEnabled = true;
-            }
-            else
-            {
-                zpatchcheckbox.IsEnabled = false;
-                zpatchcheckbox.IsChecked = true;
-            }
-            Logger.Debug(" User toggled full downgrading.");
-            if (tipscheck.IsChecked == true)
-            {
-                Logger.Debug(" Displaying a tip...");
-
-                MessageBox.Show($"This option will download and unpack extra files to match the old version files (almost) entirely.\n\nThe reason I don't do that from the start is to save space, and because it's really unnecessary to have the whole thing.");
-            }
-        }
-
-        private void zpatch_Click(object sender, RoutedEventArgs e)
-        {
-            Logger.Debug(" User toggled ZolikaPatch.");
-            if (zpatchcheckbox.IsChecked == false)
-            {
-                radiocheckbox.IsChecked = true;
-                xlivelesscheckbox.IsEnabled = true;
-                if (ffixcheckbox.IsChecked == true && gfwlcheckbox.IsChecked == false && xlivelesscheckbox.IsChecked == false)
-                {
-                    ffixcheckbox.IsEnabled = false;
-                    ffixcheckbox.IsChecked = false;
-                }
-            }
-            else
-            {
-                xlivelesscheckbox.IsChecked = false;
-                xlivelesscheckbox.IsEnabled = false;
-                ffixcheckbox.IsEnabled = true;
-            }
-            if (tipscheck.IsChecked == true)
-            {
-                Logger.Debug(" Displaying a tip...");
-
-                MessageBox.Show($"This option allows to disable installing ZolikaPatch. Only needed when performing a full downgrade.\n\nKeep in mind that the DLC's (The Lost and Damned & The Ballad of Gay Tony) are not accessible without ZolikaPatch. You will also be missing a lot of quality of life improvements.\n\nDue to issues of running a downgraded copy without ZolikaPatch, radio downgrade is enforced with ZPatch off.");
-            }
-        }
-        private void radio_Click(object sender, RoutedEventArgs e)
-        {
-            Logger.Debug(" User toggled radio downgrading.");
-            if (radiocheckbox.IsChecked == false)
-            {
-                zpatchcheckbox.IsChecked = true;
-            }
-            if (tipscheck.IsChecked == true)
-            {
-                Logger.Debug(" Displaying a tip...");
-
-                MessageBox.Show($"This option will prompt you to downgrade your radio later depending on your current options. It is not necessary to do, however.");
-            }
-        }
-        private void ffix_Click(object sender, RoutedEventArgs e)
-        {
-            if (ffixcheckbox.IsChecked == true && gfwlcheckbox.IsChecked == false && xlivelesscheckbox.IsChecked == false && zpatchcheckbox.IsChecked == false)
-            {
-                MessageBox.Show("It's required to at least install XLiveless Addon when using FusionFix in compatibility mode.");
-            }
-            if (tipscheck.IsChecked == true)
-            {
-                Logger.Debug(" Displaying a tip...");
-                MessageBox.Show("This option installs FusionFix (and GFWL patch if GFWL is enabled).\n\nGenerally not necessary, but it provides a lot of improvements to the shaders and adds in a way to load mods without replacing original files. Also helpful for downgrading radio.");
-            }
-        }
-
+        #region TipsButtons
+        #region MpButtons
         private void ffixmin_Click(object sender, RoutedEventArgs e)
         {
             if (tipscheck.IsChecked == true)
             {
                 Logger.Debug(" Displaying a tip...");
                 MessageBox.Show("This option installs the FusionFix-GFWLMin patch, which overall increases the stability in Multiplayer by disabling anything that would only apply to Singleplayer but never Multiplayer.");
-            }
-        }
-
-        private void zmenu_Click(object sender, RoutedEventArgs e)
-        {
-            if (tipscheck.IsChecked == true)
-            {
-                Logger.Debug(" Displaying a tip...");
-                MessageBox.Show("This option installs ZMenu, a trainer commonly used in Multiplayer.");
-            }
-        }
-
-        private void gfwl_Click(object sender, RoutedEventArgs e)
-        {
-            Logger.Debug(" User toggled GFWL.");
-            if (gfwlcheckbox.IsChecked == false)
-            {
-                xlivelesscheckbox.IsEnabled = true;
-                if (achievementscheckbox.IsEnabled == true)
-                {
-                    achievementscheckbox.IsChecked = true;
-                }
-                if (ffixcheckbox.IsChecked == true && xlivelesscheckbox.IsChecked == false && zpatchcheckbox.IsChecked == false)
-                {
-                    ffixcheckbox.IsEnabled = false;
-                    ffixcheckbox.IsChecked = false;
-                }
-                else
-                {
-                    xlivelesscheckbox.IsEnabled = false;
-                    achievementscheckbox.IsChecked = false;
-                    ffixcheckbox.IsEnabled = true;
-                }
-                if (tipscheck.IsChecked == true)
-                {
-                    Logger.Debug(" Displaying a tip...");
-                    MessageBox.Show("This option will attempt to ensure GFWL compatibility by installing the GFWL redists and ensuring there is no xlive.dll in the folder.\n\nThis tool does not guarantee 100% compatibility, however. Also it's highly recommended to install ZolikaPatch if enabling this.");
-                }
             }
         }
 
@@ -404,39 +330,124 @@ namespace GTAIVDowngradeUtilityWPF
                 MessageBox.Show("This option will attempt to ensure simultaneous GFWL and GTAC compatibility.");
             }
         }
-
-        private void advanced_Click(object sender, RoutedEventArgs e)
+        #endregion
+        private void version_Click(object sender, RoutedEventArgs e)
         {
-            Logger.Debug(" User toggled advanced mode.");
-            if (advancedcheck.IsChecked == true)
+            Logger.Debug(" User toggled game version.");
+            if (tipscheck.IsChecked == true)
             {
-                if (sp == true)
-                {
-                    fullcheckbox.Visibility = Visibility.Visible;
-                    version.Visibility = Visibility.Visible;
-                    xlivelesscheckbox.Visibility = Visibility.Visible;
-                    zpatchcheckbox.Visibility = Visibility.Visible;
-                }
-                radiocheckbox.Visibility = Visibility.Visible;
-                achievementscheckbox.Visibility = Visibility.Visible;
-                tipsnote.Visibility = Visibility.Visible;
+                Logger.Debug(" Displaying a tip...");
+                MessageBox.Show("1.0.8.0 is generally a better patch, as it fixes a few bugs, including VRAM detection and a few 60 FPS issues.\n\nYou may want to prefer 1.0.7.0 if your specific mods (LCPDFR, ScriptHookDotNet mods) don't support 1.0.8.0, but generally it's recommended to keep it at 1.0.8.0.");
+            }
+        }
+
+        private void full_Click(object sender, RoutedEventArgs e)
+        {
+            if (fullcheckbox.IsChecked == true)
+            {
+                zpatchcheckbox.IsEnabled = true;
             }
             else
             {
-                version.Visibility = Visibility.Collapsed;
-                fullcheckbox.Visibility = Visibility.Collapsed;
-                radiocheckbox.Visibility = Visibility.Collapsed;
-                achievementscheckbox.Visibility = Visibility.Collapsed;
-                xlivelesscheckbox.Visibility = Visibility.Collapsed;
-                zpatchcheckbox.Visibility = Visibility.Collapsed;
-                tipsnote.Visibility = Visibility.Collapsed;
+                zpatchcheckbox.IsEnabled = false;
+                zpatchcheckbox.IsChecked = true;
             }
-            if (tipscheck.IsChecked == true && advancedcheck.IsChecked == true)
+            Logger.Debug(" User toggled full downgrading.");
+            if (tipscheck.IsChecked == true)
             {
                 Logger.Debug(" Displaying a tip...");
-                MessageBox.Show("Advanced Mode enables all toggles. They're hidden by default as the defaults for these options are fine for majority.\n\nDon't touch these toggles if you have no idea what you're doing and read the tips.");
+
+                MessageBox.Show($"This option will download and unpack extra files to match the old version files (almost) entirely.\n\nThe reason I don't do that from the start is to save space, and because it's really unnecessary to have the whole thing.");
             }
         }
+
+        private void zpatch_Click(object sender, RoutedEventArgs e)
+        {
+            Logger.Debug(" User toggled ZolikaPatch.");
+            if (zpatchcheckbox.IsChecked == false)
+            {
+                radiocheckbox.IsChecked = true;
+                xlivelesscheckbox.IsEnabled = true;
+            }
+            else
+            {
+                xlivelesscheckbox.IsChecked = false;
+                xlivelesscheckbox.IsEnabled = false;
+                ffixcheckbox.IsEnabled = true;
+            }
+            if (tipscheck.IsChecked == true)
+            {
+                Logger.Debug(" Displaying a tip...");
+
+                MessageBox.Show($"This option allows to disable installing ZolikaPatch. Only needed when performing a full downgrade.\n\nKeep in mind that the DLC's (The Lost and Damned & The Ballad of Gay Tony) are not accessible without ZolikaPatch. You will also be missing a lot of quality of life improvements.\n\nDue to issues of running a downgraded copy without ZolikaPatch, radio downgrade is enforced with ZPatch off.");
+            }
+        }
+        private void radio_Click(object sender, RoutedEventArgs e)
+        {
+            Logger.Debug(" User toggled radio downgrading.");
+            if (radiocheckbox.IsChecked == false)
+            {
+                zpatchcheckbox.IsChecked = true;
+                ffixcheckbox.IsEnabled = true;
+            }
+            if (tipscheck.IsChecked == true)
+            {
+                Logger.Debug(" Displaying a tip...");
+
+                MessageBox.Show($"This option will prompt you to downgrade your radio later depending on your current options. It is not necessary to do, however.");
+            }
+        }
+        private void ffix_Click(object sender, RoutedEventArgs e)
+        {
+            if (ffixcheckbox.IsChecked == true && gfwlcheckbox.IsChecked == false && xlivelesscheckbox.IsChecked == false && zpatchcheckbox.IsChecked == false)
+            {
+                MessageBox.Show("It's required to at least install XLiveless Addon when using FusionFix in compatibility mode.");
+            }
+            if (tipscheck.IsChecked == true)
+            {
+                Logger.Debug(" Displaying a tip...");
+                MessageBox.Show("This option installs FusionFix (and GFWL patch if GFWL is enabled).\n\nGenerally not necessary, but it provides a lot of improvements to the shaders and adds in a way to load mods without replacing original files. Also helpful for downgrading radio.");
+            }
+        }
+
+        private void zmenu_Click(object sender, RoutedEventArgs e)
+        {
+            if (tipscheck.IsChecked == true)
+            {
+                Logger.Debug(" Displaying a tip...");
+                MessageBox.Show("This option installs ZMenu, a trainer commonly used in Multiplayer.");
+            }
+        }
+
+        private void gfwl_Click(object sender, RoutedEventArgs e)
+        {
+            Logger.Debug(" User toggled GFWL.");
+            if (gfwlcheckbox.IsChecked == false)
+            {
+                xlivelesscheckbox.IsEnabled = true;
+                if (achievementscheckbox.IsEnabled == true)
+                {
+                    achievementscheckbox.IsChecked = true;
+                }
+                if (ffixcheckbox.IsChecked == true && xlivelesscheckbox.IsChecked == false && zpatchcheckbox.IsChecked == false)
+                {
+                    ffixcheckbox.IsEnabled = false;
+                    ffixcheckbox.IsChecked = false;
+                }
+                else
+                {
+                    xlivelesscheckbox.IsEnabled = false;
+                    achievementscheckbox.IsChecked = false;
+                    ffixcheckbox.IsEnabled = true;
+                }
+                if (tipscheck.IsChecked == true)
+                {
+                    Logger.Debug(" Displaying a tip...");
+                    MessageBox.Show("This option will attempt to ensure GFWL compatibility by installing the GFWL redists and ensuring there is no xlive.dll in the folder.\n\nThis tool does not guarantee 100% compatibility, however. Also it's highly recommended to install ZolikaPatch if enabling this.");
+                }
+            }
+        }
+
         private void steamchieves_Click(object sender, RoutedEventArgs e)
         {
             Logger.Debug(" User toggled Steam Achievements.");
@@ -487,8 +498,9 @@ namespace GTAIVDowngradeUtilityWPF
                 $"Version: {GetAssemblyVersion()}",
                 "Information");
         }
+        #endregion
 
-
+        #region SelectingFolder
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             Logger.Debug(" User is selecting the game folder...");
@@ -569,6 +581,9 @@ namespace GTAIVDowngradeUtilityWPF
             }
         }
 
+        #endregion
+
+        #region Downloader
         string downloadingWhat;
         bool downloadfinished = false;
         private async Task Download(string downloadUrl, string destination, string downloadedName, string downloadingWhatFun)
@@ -614,6 +629,10 @@ namespace GTAIVDowngradeUtilityWPF
                 downgradebtn.Content = "Downgrading...";
             });
         }
+
+        #endregion
+
+        #region Downgrading
         private async void downgrade_Click(object sender, RoutedEventArgs e)
         {
             options.IsEnabled = false;
@@ -621,6 +640,26 @@ namespace GTAIVDowngradeUtilityWPF
             buttons.IsEnabled = false;
             downgradebtn.Content = "Downgrading...";
             Logger.Info(" Starting the downgrade...");
+
+            // http client for downloading mods
+            var httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.Add("User-Agent", "Other");
+
+            // config initialization for later
+            var configFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            var settings = configFile.AppSettings.Settings;
+
+            if (!Directory.Exists("Files\\Shared"))
+            {
+                Logger.Debug(" Created a Shared folder incase it doesn't exist.");
+                Directory.CreateDirectory("Files\\Shared");
+            }
+
+            // preparation
+
+            #region Backup
+            Logger.Debug(" ### Backup checks. ###");
+
             if (backupexists == false)
             {
                 Logger.Debug(" Backup not found, prompting to backup.");
@@ -631,6 +670,12 @@ namespace GTAIVDowngradeUtilityWPF
                     backupexists = true;
                 }
             }
+
+            Logger.Debug(" ### Done with backup checks. ### ");
+            #endregion
+
+            #region Radio
+            Logger.Debug(" ### Radio checks. ### ");
 
             if (radiocheckbox.IsChecked == true)
             {
@@ -740,7 +785,7 @@ namespace GTAIVDowngradeUtilityWPF
                 }
                 else if (ffixcheckbox.IsChecked == false && File.Exists("Files\\RadioDowngrade\\install.bat"))
                 {
-                    Logger.Info(" Launched the install.bat from radio downgrader...");
+                    Logger.Info(" Launching install.bat for radio downgrading...");
                     CopyFolder("Files\\RadioDowngrade", directory);
                     ProcessStartInfo psirad = new ProcessStartInfo
                     {
@@ -748,15 +793,21 @@ namespace GTAIVDowngradeUtilityWPF
                         WorkingDirectory = directory
                     };
                     Process.Start(psirad);
+                    Logger.Debug(" Launched the install.bat from radio downgrader");
                 }
             }
-            // http client for downloading various mods
-            var httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.Add("User-Agent", "Other");
+
+            Logger.Debug(" ### Done with radio checks. ### ");
+            #endregion
+
+            #region Redistributables
+            Logger.Debug(" ### Redistributables checks. ### ");
 
             Logger.Info(" Checking redistributables...");
             bool isvc = RedistributablePackage.IsInstalled(RedistributablePackageVersion.VC2005x86);
             bool isgfwl = IsGFWLInstalled();
+
+            Logger.Debug(" Redistributables checked.");
 
             if (!isvc || (!isgfwl && (gfwlcheckbox.IsChecked == true || (sp == false && (gfwlmpcheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true)))))
             {
@@ -783,11 +834,12 @@ namespace GTAIVDowngradeUtilityWPF
                     {
                         await Task.Delay(500);
                     }
+                    Logger.Debug(" Redistributables download complete.");
                     downloadfinished = false;
                     Logger.Info(" Extracting redistributables...");
                     ZipFile.ExtractToDirectory("Files\\Redist.zip", "Files\\Redist", true);
                     File.Delete("Files\\Redist.zip");
-                    Logger.Info(" Redistributables extracted.");
+                    Logger.Debug(" Redistributables extracted.");
                 }
                 if (!isvc)
                 {
@@ -802,40 +854,218 @@ namespace GTAIVDowngradeUtilityWPF
                     };
                     vcredist.Start();
                     await vcredist.WaitForExitAsync();
+                    Logger.Debug(" VC++ installed.");
                 }
-                if (!isgfwl && (gfwlcheckbox.IsChecked == true || (sp == false && (gfwlmpcheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true)))) { Logger.Info(" Installing GFWL redistributables..."); await Process.Start($"Files\\Redist\\gfwlivesetup.exe").WaitForExitAsync(); }
+                if (!isgfwl && (gfwlcheckbox.IsChecked == true || (sp == false && (gfwlmpcheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true)))) { Logger.Info(" Installing GFWL redistributables..."); await Process.Start($"Files\\Redist\\gfwlivesetup.exe").WaitForExitAsync(); Logger.Debug(" GFWL installed."); }
             }
             else
             {
                 Logger.Info(" Redistributables are all good.");
             }
 
+            Logger.Debug(" ### Redistributables checks done. ### ");
+            #endregion
+
+            #region Removals
+            Logger.Debug(" ### Removing incompatible plugins. ### ");
+
             // removing any scripts because they can break shit and we don't want that
             Logger.Info(" Removing existing plugins to avoid incompatibility (can be found in the backup again).");
+            Logger.Debug(" Removing .asi files...");
             foreach (var file in Directory.GetFiles(directory, "*.asi"))
             {
                 File.Delete(file);
             }
+            Logger.Debug(" Removed .asi files.");
+            Logger.Debug(" Removing .ini files...");
             foreach (var file in Directory.GetFiles(directory, "*.ini"))
             {
                 File.Delete(file);
             }
+            Logger.Debug(" Removed .ini files.");
+            Logger.Debug(" Removing the \"plugins\" folder...");
             if (Directory.Exists($"{directory}\\plugins"))
             {
                 Directory.Delete($"{directory}\\plugins", true);
             }
+            Logger.Debug(" Removed the \"plugins\" folder.");
+            Logger.Debug(" Removing other unnecessary files...");
             foreach (var file in from dll in new string[4] { "launc.dll", "orig_socialclub.dll", "socialclub.dll", "1911.dll" } where File.Exists($"{directory}\\{dll}") select dll)
             {
                 File.Delete($"{directory}\\{file}");
             }
+            Logger.Debug(" Removed other unnecessary files.");
+
+            Logger.Debug(" ### Incompatible plugins removed. ### ");
+            #endregion
 
             // actually downgrading now
-            var configFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            var settings = configFile.AppSettings.Settings;
-            if (!Directory.Exists("Files\\Shared"))
+
+            #region Shared Files
+            Logger.Debug(" ### Copying shared files. ### ");
+
+            Logger.Info(" Copying shared files...");
+            if (!File.Exists("Files\\Shared\\PlayGTAIV.exe"))
             {
-                Directory.CreateDirectory("Files\\Shared");
+                Logger.Debug(" Downloading shared files due to being missing...");
+                HttpResponseMessage firstResponseshared;
+                try
+                {
+                    firstResponseshared = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIVFullDowngradeAssets/releases/135442404");
+                    firstResponseshared.EnsureSuccessStatusCode();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex, "Error getting latest release, probably ratelimited");
+                    throw;
+                }
+                var firstResponseBodyshared = await firstResponseshared.Content.ReadAsStringAsync();
+                var downloadUrlshared = JsonDocument.Parse(firstResponseBodyshared).RootElement.GetProperty("assets")[2].GetProperty("browser_download_url").GetString();
+                Download(downloadUrlshared!, "Files", "BaseAssets.zip", "Base assets");
+                while (!downloadfinished)
+                {
+                    await Task.Delay(500);
+                }
+                downloadfinished = false;
+                Logger.Debug(" Shared files downloaded.");
+                Logger.Debug(" Extracting shared files...");
+                ZipFile.ExtractToDirectory("Files\\BaseAssets.zip", "Files", true);
+                File.Delete("Files\\BaseAssets.zip");
             }
+
+            Logger.Info(" Copying shared files (including UAL)...");
+            CopyFolder("Files\\Shared", directory);
+            Logger.Debug(" Shared files copied.");
+
+            Logger.Debug(" ### Copying shared files done. ### ");
+            #endregion
+
+            #region GTAIV.exe
+
+            Logger.Debug(" ### Moving over GTAIV.exe. ###");
+            if (patch8click.IsChecked == true)
+            {
+                Logger.Debug(" Copying 1.0.8.0 GTAIV.exe...");
+                File.Copy("Files\\1080\\GTAIV.exe", $"{directory}\\GTAIV.exe", true);
+                Logger.Debug(" Copied 1.0.8.0 GTAIV.exe.");
+            }
+            else
+            {
+                Logger.Debug(" Copying 1.0.7.0 GTAIV.exe...");
+                File.Copy("Files\\1070\\GTAIV.exe", $"{directory}\\GTAIV.exe", true);
+                Logger.Debug(" Copied 1.0.7.0 GTAIV.exe.");
+            }
+
+            Logger.Debug(" ### Moving over GTAIV.exe done. ###");
+            #endregion
+
+            #region GFWL
+            Logger.Debug(" ### GFWL checks. ###");
+            if (gfwlcheckbox.IsChecked == true || (sp == false && (gfwlmpcheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true)))
+            {
+                Logger.Info(" Copying shared GFWL files...");
+                CopyFolder("Files\\GFWL\\Shared", directory);
+                Logger.Debug(" Shared GFWL files copied.");
+                if (patch8click.IsChecked == true)
+                {
+                    Logger.Info(" Copying 1.0.8.0 GFWL files...");
+                    CopyFolder("Files\\GFWL\\1080", directory);
+                    Logger.Debug(" 1.0.8.0 GFWL files copied.");
+                }
+                else
+                {
+                    Logger.Info(" Copying 1.0.7.0 GFWL files...");
+                    CopyFolder("Files\\GFWL\\1070", directory);
+                    Logger.Debug(" 1.0.7.0 GFWL files copied.");
+                }
+            }
+
+            Logger.Debug(" ### GFWL checks done. ###");
+            #endregion
+
+            #region Full Files
+            Logger.Debug(" ### Full files checks. ###");
+
+            if (fullcheckbox.IsChecked == true)
+            {
+                Logger.Info(" Downloading full files...");
+                if (patch8click.IsChecked == true)
+                {
+                    if (!Directory.Exists("Files\\1080FullFiles"))
+                    {
+                        Logger.Info(" Downloading full files for 1.0.8.0...");
+                        Directory.CreateDirectory("Files\\1080FullFiles");
+                        HttpResponseMessage firstResponse1080;
+                        try
+                        {
+                            firstResponse1080 = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIVFullDowngradeAssets/releases/135442404");
+                            firstResponse1080.EnsureSuccessStatusCode();
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Error(ex, "Error getting latest release, probably ratelimited");
+                            throw;
+                        }
+                        var firstResponseBody1080 = await firstResponse1080.Content.ReadAsStringAsync();
+                        var downloadUrl1080 = JsonDocument.Parse(firstResponseBody1080).RootElement.GetProperty("assets")[1].GetProperty("browser_download_url").GetString();
+                        Download(downloadUrl1080!, "Files\\1080FullFiles", "1080FullFiles.zip", "Full files");
+                        while (!downloadfinished)
+                        {
+                            await Task.Delay(500);
+                        }
+                        downloadfinished = false;
+                        Logger.Debug("Full files for 1.0.8.0 downloaded.");
+                        Logger.Info(" Extracting full files for 1.0.8.0...");
+                        ZipFile.ExtractToDirectory("Files\\1080FullFiles\\1080FullFiles.zip", "Files\\1080FullFiles", true);
+                        File.Delete("Files\\1080FullFiles\\1080FullFiles.zip");
+                        Logger.Debug(" Full files for 1.0.8.0 extracted.");
+                    }
+                    Logger.Info(" Copying full files for 1.0.8.0...");
+                    CopyFolder("Files\\1080FullFiles", directory);
+                    Logger.Debug(" Full files for 1.0.8.0 copied.");
+                }
+                else
+                {
+                    if (!Directory.Exists("Files\\1070FullFiles"))
+                    {
+                        Logger.Info(" Downloading full files for 1.0.7.0...");
+                        Directory.CreateDirectory("Files\\1070FullFiles");
+                        HttpResponseMessage firstResponse1070;
+                        try
+                        {
+                            firstResponse1070 = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIVFullDowngradeAssets/releases/135442404");
+                            firstResponse1070.EnsureSuccessStatusCode();
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Error(ex, "Error getting latest release, probably ratelimited");
+                            throw;
+                        }
+                        var firstResponseBody1070 = await firstResponse1070.Content.ReadAsStringAsync();
+                        var downloadUrl1070 = JsonDocument.Parse(firstResponseBody1070).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
+                        Download(downloadUrl1070!, "Files\\1070FullFiles", "1070FullFiles.zip", "Full files");
+                        while (!downloadfinished)
+                        {
+                            await Task.Delay(500);
+                        }
+                        downloadfinished = false;
+                        Logger.Debug("Full files for 1.0.7.0 downloaded.");
+                        Logger.Info(" Extracting full files for 1.0.7.0...");
+                        ZipFile.ExtractToDirectory("Files\\1070FullFiles\\1070FullFiles.zip", "Files\\1070FullFiles", true);
+                        File.Delete("Files\\1070FullFiles\\1070FullFiles.zip");
+                        Logger.Debug(" Full files for 1.0.7.0 extracted.");
+                    }
+                    Logger.Info(" Copying full files for 1.0.7.0...");
+                    CopyFolder("Files\\1070FullFiles", directory);
+                    Logger.Debug(" Full files for 1.0.7.0 copied.");
+                }
+            }
+
+            Logger.Debug(" ### Full files checks done. ###");
+            #endregion
+
+            #region Ultimate ASI Loader
+            Logger.Debug(" ### Ultimate ASI Loader checks. ### ");
 
             // ultimate asi loader
             if (zpatchcheckbox.IsChecked == true || ffixcheckbox.IsChecked == true || achievementscheckbox.IsChecked == true || xlivelesscheckbox.IsChecked == true || zmenucheckbox.IsChecked == true)
@@ -871,6 +1101,7 @@ namespace GTAIVDowngradeUtilityWPF
                     {
                         await Task.Delay(500);
                     }
+                    Logger.Debug(" UAL downloaded.");
                     downloadfinished = false;
                     Logger.Info(" Extracting UAL...");
                     ZipFile.ExtractToDirectory("Files\\Shared\\Ultimate-ASI-Loader.zip", "Files\\Shared\\", true);
@@ -881,160 +1112,70 @@ namespace GTAIVDowngradeUtilityWPF
                     Logger.Debug(" Edited the value in the config.");
 
                 }
+
                 Logger.Info(" Renaming unmatching UAL names if exist...");
                 if (gfwlcheckbox.IsChecked == false || (sp == false && (gfwlmpcheckbox.IsChecked == false && gtacgfwlcheckbox.IsChecked == false)))
                 {
                     if (File.Exists("Files\\Shared\\dinput8.dll"))
                     {
+                        Logger.Debug(" Renaming dinput8.dll to xlive.dll...");
                         File.Move("Files\\Shared\\dinput8.dll", "Files\\Shared\\xlive.dll", true);
+                        Logger.Debug(" Renamed dinput8.dll to xlive.dll.");
                     }
                     if (File.Exists($"{directory}\\dinput8.dll"))
                     {
+                        Logger.Debug(" Renaming xlive.dll to dinput8.dll...");
                         File.Move($"{directory}\\dinput8.dll", $"{directory}\\xlive.dll", true);
+                        Logger.Debug(" Renamed xlive.dll to dinput8.dll.");
                     }
                     if (xlivelesscheckbox.IsChecked == true && sp)
                     {
+                        Logger.Debug(" Copying XLivelessAddon...");
                         CopyFolder("Files\\XLivelessAddon", directory);
+                        Logger.Debug(" Copied XLivelessAddon.");
                     }
                 }
                 else if (gfwlcheckbox.IsChecked == true || (sp == false && (gfwlmpcheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true)))
                 {
                     if (File.Exists("Files\\Shared\\xlive.dll"))
                     {
+                        Logger.Debug(" Renaming xlive.dll to dinput8.dll...");
                         File.Move("Files\\Shared\\xlive.dll", "Files\\Shared\\dinput8.dll", true);
+                        Logger.Debug(" Renamed xlive.dll to dinput8.dll.");
                     }
                     if (File.Exists($"{directory}\\xlive.dll"))
                     {
+                        Logger.Debug(" Renaming xlive.dll to dinput8.dll...");
                         File.Move($"{directory}\\xlive.dll", $"{directory}\\dinput8.dll", true);
+                        Logger.Debug(" Renamed xlive.dll to dinput8.dll.");
                     }
                 }
                 if (File.Exists($"{directory}\\dsound.dll"))
                 {
-                    Logger.Info(" Removing dsound.dll from the game folder to avoid incompatibility...");
+                    Logger.Debug(" Removing dsound.dll from the game folder to avoid incompatibility...");
                     File.Delete($"{directory}\\dsound.dll");
+                    Logger.Debug(" dsound.dll removed");
                 }
             }
 
-            // shared files
-            if (!File.Exists("Files\\Shared\\PlayGTAIV.exe"))
-            {
-                Logger.Info(" Downloading shared files...");
-                HttpResponseMessage firstResponseshared;
-                try
-                {
-                    firstResponseshared = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIVFullDowngradeAssets/releases/135442404");
-                    firstResponseshared.EnsureSuccessStatusCode();
-                }
-                catch (Exception ex)
-                {
-                    Logger.Error(ex, "Error getting latest release, probably ratelimited");
-                    throw;
-                }
-                var firstResponseBodyshared = await firstResponseshared.Content.ReadAsStringAsync();
-                var downloadUrlshared = JsonDocument.Parse(firstResponseBodyshared).RootElement.GetProperty("assets")[2].GetProperty("browser_download_url").GetString();
-                Download(downloadUrlshared!, "Files", "BaseAssets.zip", "Base assets");
-                while (!downloadfinished)
-                {
-                    await Task.Delay(500);
-                }
-                downloadfinished = false;
-                Logger.Info(" Extracting shared files...");
-                ZipFile.ExtractToDirectory("Files\\BaseAssets.zip", "Files", true);
-                File.Delete("Files\\BaseAssets.zip");
-            }
+            Logger.Debug(" ### Ultimate ASI Loader checks done. ### ");
+            #endregion
 
-            Logger.Info(" Copying shared files (including UAL)...");
-            CopyFolder("Files\\Shared", directory);
+            #region Steam Achievements
+            Logger.Debug(" ### Steam Achievements checks. ###");
 
-            // GFWL files
-            if (gfwlcheckbox.IsChecked == true || (sp == false && (gfwlmpcheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true)))
-            {
-                Logger.Info(" Copying GFWL files...");
-                CopyFolder("Files\\GFWL\\Shared", directory);
-                if (patch8click.IsChecked == true)
-                {
-                    CopyFolder("Files\\GFWL\\1080", directory);
-                }
-                else
-                {
-                    CopyFolder("Files\\GFWL\\1070", directory);
-                }
-            }
-
-            // full files
-            if (fullcheckbox.IsChecked == true)
-            {
-                Logger.Info(" Downloading full files...");
-                if (patch8click.IsChecked == true)
-                {
-                    if (!Directory.Exists("Files\\1080FullFiles"))
-                    {
-                        Directory.CreateDirectory("Files\\1080FullFiles");
-                        HttpResponseMessage firstResponse1080;
-                        try
-                        {
-                            firstResponse1080 = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIVFullDowngradeAssets/releases/135442404");
-                            firstResponse1080.EnsureSuccessStatusCode();
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.Error(ex, "Error getting latest release, probably ratelimited");
-                            throw;
-                        }
-                        var firstResponseBody1080 = await firstResponse1080.Content.ReadAsStringAsync();
-                        var downloadUrl1080 = JsonDocument.Parse(firstResponseBody1080).RootElement.GetProperty("assets")[1].GetProperty("browser_download_url").GetString();
-                        Download(downloadUrl1080!, "Files\\1080FullFiles", "1080FullFiles.zip", "Full files");
-                        while (!downloadfinished)
-                        {
-                            await Task.Delay(500);
-                        }
-                        downloadfinished = false;
-                        Logger.Info(" Extracting full files...");
-                        ZipFile.ExtractToDirectory("Files\\1080FullFiles\\1080FullFiles.zip", "Files\\1080FullFiles", true);
-                        File.Delete("Files\\1080FullFiles\\1080FullFiles.zip");
-                    }
-                    Logger.Info(" Copying full files...");
-                    CopyFolder("Files\\1080FullFiles", directory);
-                }
-                else
-                {
-                    if (!Directory.Exists("Files\\1070FullFiles"))
-                    {
-                        Directory.CreateDirectory("Files\\1070FullFiles");
-                        HttpResponseMessage firstResponse1070;
-                        try
-                        {
-                            firstResponse1070 = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIVFullDowngradeAssets/releases/135442404");
-                            firstResponse1070.EnsureSuccessStatusCode();
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.Error(ex, "Error getting latest release, probably ratelimited");
-                            throw;
-                        }
-                        var firstResponseBody1070 = await firstResponse1070.Content.ReadAsStringAsync();
-                        var downloadUrl1070 = JsonDocument.Parse(firstResponseBody1070).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
-                        Download(downloadUrl1070!, "Files\\1070FullFiles", "1070FullFiles.zip", "Full files");
-                        while (!downloadfinished)
-                        {
-                            await Task.Delay(500);
-                        }
-                        downloadfinished = false;
-                        Logger.Info(" Extracting full files...");
-                        ZipFile.ExtractToDirectory("Files\\1070FullFiles\\1070FullFiles.zip", "Files\\1070FullFiles", true);
-                        File.Delete("Files\\1070FullFiles\\1070FullFiles.zip");
-                    }
-                    Logger.Info(" Copying full files...");
-                    CopyFolder("Files\\1070FullFiles", directory);
-                }
-            }
-
-            // steam achievements
             if (achievementscheckbox.IsChecked == true)
             {
                 Logger.Info(" Copying Steam Achievements mod...");
                 File.Copy("Files\\ZolikaPatch\\SteamAchievements.asi", $"{directory}\\SteamAchievements.asi", true);
+                Logger.Debug(" Steam Achievements mod copied.");
             }
+
+            Logger.Debug(" ### Steam Achievements checks done. ###");
+            #endregion
+
+            #region ZolikaPatch
+            Logger.Debug(" ### ZolikaPatch checks. ###");
 
             bool gtacgfwlff = true;
 
@@ -1049,233 +1190,266 @@ namespace GTAIVDowngradeUtilityWPF
                 {
                     gtacgfwlff = false;
                 }
+            }
 
-                // zolikapatch setup
-                if (zpatchcheckbox.IsChecked == true || sp == false)
+            if (zpatchcheckbox.IsChecked == true)
+            {
+                Logger.Info(" Installing ZolikaPatch and it's matching ini...");
+                File.Copy("Files\\ZolikaPatch\\ZolikaPatch.asi", $"{directory}\\ZolikaPatch.asi", true);
+                Logger.Debug(" ZolikaPatch asi copied.");
+
+                bool gfwl = (sp == false && (gfwlmpcheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true || gtaccheckbox.IsChecked == true));
+                bool ffix = ((sp == true && ffixcheckbox.IsChecked == true) || (sp == false && (gtacgfwlcheckbox.IsChecked == true && gtacgfwlff == true)) || ((gfwl && !gtacgfwlff) && ffixcheckbox.IsChecked == true));
+                switch (ffix, gfwl)
                 {
-                    Logger.Info(" Installing ZolikaPatch and it's matching ini...");
-                    File.Copy("Files\\ZolikaPatch\\ZolikaPatch.asi", $"{directory}\\ZolikaPatch.asi", true);
+                    case (true, true):
+                        {
+                            Logger.Debug(" Copying FF-GFWL ini...");
+                            File.Copy("Files\\ZolikaPatch\\ZolikaPatch-FFix-GFWL.ini", $"{directory}\\ZolikaPatch.ini", true);
+                            Logger.Debug(" Copied FF-GFWL ini.");
+                            break;
+                        }
+                    case (false, true):
+                        {
+                            Logger.Debug(" Copying NoFF-GFWL ini...");
+                            File.Copy("Files\\ZolikaPatch\\ZolikaPatch-NoFFix-GFWL.ini", $"{directory}\\ZolikaPatch.ini", true);
+                            Logger.Debug(" Copied NoFF-GFWL ini.");
+                            break;
+                        }
+                    case (true, false):
+                        {
+                            Logger.Debug(" Copying FF ini...");
+                            File.Copy("Files\\ZolikaPatch\\ZolikaPatch-FFix.ini", $"{directory}\\ZolikaPatch.ini", true);
+                            Logger.Debug(" Copied FF ini.");
+                            break;
+                        }
+                    case (false, false):
+                        {
+                            Logger.Debug(" Copying NoFF ini...");
+                            File.Copy("Files\\ZolikaPatch\\ZolikaPatch-NoFFix.ini", $"{directory}\\ZolikaPatch.ini", true);
+                            Logger.Debug(" Copied NoFF ini.");
+                            break;
+                        }
+                }
+            }
+            #endregion
 
-                    bool gfwl = (sp == false && (gfwlmpcheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true || gtaccheckbox.IsChecked == true));
-                    bool ffix = ((sp == true && ffixcheckbox.IsChecked == true) || (sp == false && (gtacgfwlcheckbox.IsChecked == true && gtacgfwlff == true)) || ((gfwl && !gtacgfwlff) && ffixcheckbox.IsChecked == true));
-                    switch (ffix, gfwl)
+            #region FusionFix
+
+            Logger.Debug(" ### FusionFix checks. ###");
+            if (ffixcheckbox.IsChecked == true)
+            {
+                if (sp == true || (sp == false && gtaccheckbox.IsChecked == false))
+                {
+                    Logger.Info(" Not GTA Connected install: installing FusionFix...");
+                    string downloadedff = settings["fusionfix"].Value;
+                    if (!File.Exists("Files\\FusionFix\\GTAIV.EFLC.FusionFix.asi"))
                     {
-                        case (true, true):
-                            {
-                                File.Copy("Files\\ZolikaPatch\\ZolikaPatch-FFix-GFWL.ini", $"{directory}\\ZolikaPatch.ini", true);
-                                break;
-                            }
-                        case (false, true):
-                            {
-                                File.Copy("Files\\ZolikaPatch\\ZolikaPatch-NoFFix-GFWL.ini", $"{directory}\\ZolikaPatch.ini", true);
-                                break;
-                            }
-                        case (true, false):
-                            {
-                                File.Copy("Files\\ZolikaPatch\\ZolikaPatch-FFix.ini", $"{directory}\\ZolikaPatch.ini", true);
-                                break;
-                            }
-                        case (false, false):
-                            {
-                                File.Copy("Files\\ZolikaPatch\\ZolikaPatch-NoFFix.ini", $"{directory}\\ZolikaPatch.ini", true);
-                                break;
-                            }
+                        settings["fusionfix"].Value = "";
+                        configFile.Save(ConfigurationSaveMode.Modified);
+                        ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
+                        Logger.Debug(" FusionFix not downloaded - changed the value of downloaded ffix to null.");
                     }
-                }
-                Logger.Info(" Moving over GTAIV.exe...");
-                if (patch8click.IsChecked == true)
-                {
-                    File.Copy("Files\\1080\\GTAIV.exe", $"{directory}\\GTAIV.exe", true);
-                }
-                else
-                {
-                    File.Copy("Files\\1070\\GTAIV.exe", $"{directory}\\GTAIV.exe", true);
-                }
-
-                // fusionfix
-                if (ffixcheckbox.IsChecked == true)
-                {
-                    if (sp == true || (sp == false && gtaccheckbox.IsChecked == false))
+                    HttpResponseMessage firstResponseff;
+                    try
                     {
-                        Logger.Info(" Not GTA Connected install: installing FusionFix...");
-                        string downloadedff = settings["fusionfix"].Value;
-                        if (!File.Exists("Files\\FusionFix\\GTAIV.EFLC.FusionFix.asi"))
-                        {
-                            settings["fusionfix"].Value = "";
-                            configFile.Save(ConfigurationSaveMode.Modified);
-                            ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
-                            Logger.Debug(" FusionFix not downloaded - changed the value of downloaded ffix to null.");
-                        }
-                        HttpResponseMessage firstResponseff;
-                        try
-                        {
-                            Logger.Debug(" Receiving latest release...");
-                            firstResponseff = await httpClient.GetAsync("https://api.github.com/repos/ThirteenAG/GTAIV.EFLC.FusionFix/releases/latest");
-                            firstResponseff.EnsureSuccessStatusCode();
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.Error(ex, "Error getting latest release, probably ratelimited");
-                            throw;
-                        }
-                        string firstResponseBodyff = await firstResponseff.Content.ReadAsStringAsync();
-                        var latestff = JsonDocument.Parse(firstResponseBodyff).RootElement.GetProperty("tag_name").GetString();
-                        if (latestff != downloadedff)
-                        {
-                            if (!Directory.Exists("Files\\FusionFix"))
-                            {
-                                Directory.CreateDirectory("Files\\FusionFix");
-                            }
-                            Logger.Debug(" Downloaded version of FusionFix doesn't match the latest version, downloading...");
-                            var downloadUrlff = JsonDocument.Parse(firstResponseBodyff).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
-                            Download(downloadUrlff!, "Files\\FusionFix", "FusionFix.zip", $"FusionFix {latestff}");
-                            while (!downloadfinished)
-                            {
-                                await Task.Delay(500);
-                            }
-                            downloadfinished = false;
-                            Logger.Info(" Extracting FusionFix...");
-                            ZipFile.ExtractToDirectory("Files\\FusionFix\\FusionFix.zip", "Files\\FusionFix\\", true);
-                            File.Delete("Files\\FusionFix\\FusionFix.zip");
-                            File.Delete("Files\\FusionFix\\dinput8.dll");
-                            File.Move("Files\\FusionFix\\plugins\\GTAIV.EFLC.FusionFix.asi", "Files\\FusionFix\\GTAIV.EFLC.FusionFix.asi", true);
-                            File.Move("Files\\FusionFix\\plugins\\GTAIV.EFLC.FusionFix.ini", "Files\\FusionFix\\GTAIV.EFLC.FusionFix.ini", true);
-                            Directory.Delete("Files\\FusionFix\\plugins");
-                            settings["fusionfix"].Value = latestff;
-                            configFile.Save(ConfigurationSaveMode.Modified);
-                            ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
-                            Logger.Debug(" Edited the value in the config.");
-                        }
-                        if (gfwlcheckbox.IsChecked == true || (sp == false && (gfwlmpcheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true)))
-                        {
-                            if (sp == false && ffixmincheckbox.IsChecked == true)
-                            {
-                                Logger.Info(" Downloading the GFWL-Min Patch for FusionFix...");
-                                HttpResponseMessage firstResponse2;
-                                try
-                                {
-                                    firstResponse2 = await httpClient.GetAsync("https://api.github.com/repos/SandeMC/GTAIV.EFLC.FusionFix-GFWLMin/releases/latest");
-                                    firstResponse2.EnsureSuccessStatusCode();
-                                }
-                                catch (Exception ex)
-                                {
-                                    Logger.Error(ex, "Error getting latest release, probably ratelimited");
-                                    throw;
-                                }
-                                var firstResponseBody2 = await firstResponse2.Content.ReadAsStringAsync();
-                                var downloadUrl2 = JsonDocument.Parse(firstResponseBody2).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
-                                Download(downloadUrl2!, "Files\\FusionFix", "FusionFix-GFWLMin.zip", "FF-GFWLMin");
-                                while (!downloadfinished)
-                                {
-                                    await Task.Delay(500);
-                                }
-                                downloadfinished = false;
-                                Logger.Info(" Extracting GFWL-Min patch...");
-                                ZipFile.ExtractToDirectory("Files\\FusionFix\\FusionFix-GFWLMin.zip", "Files\\FusionFix", true);
-                                File.Delete("Files\\FusionFix\\FusionFix-GFWLMin.zip");
-                            }
-                            else
-                            {
-                                Logger.Info(" Downloading the GFWL Patch for FusionFix...");
-                                HttpResponseMessage firstResponse2;
-                                try
-                                {
-                                    firstResponse2 = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIV.EFLC.FusionFix-GFWL/releases/latest");
-                                    firstResponse2.EnsureSuccessStatusCode();
-                                }
-                                catch (Exception ex)
-                                {
-                                    Logger.Error(ex, "Error getting latest release, probably ratelimited");
-                                    throw;
-                                }
-                                var firstResponseBody2 = await firstResponse2.Content.ReadAsStringAsync();
-                                var downloadUrl2 = JsonDocument.Parse(firstResponseBody2).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
-                                Download(downloadUrl2!, "Files\\FusionFix", "FusionFix-GFWL.zip", "FF-GFWL");
-                                while (!downloadfinished)
-                                {
-                                    await Task.Delay(500);
-                                }
-                                downloadfinished = false;
-                                Logger.Info(" Extracting GFWL patch...");
-                                ZipFile.ExtractToDirectory("Files\\FusionFix\\FusionFix-GFWL.zip", "Files\\FusionFix", true);
-                                File.Delete("Files\\FusionFix\\FusionFix-GFWL.zip");
-                            }
-                        }
-                        Logger.Info(" Copying FusionFix & the patches if downloaded any...");
-                        CopyFolder("Files\\FusionFix\\", $"{directory}");
+                        Logger.Debug(" Receiving latest release...");
+                        firstResponseff = await httpClient.GetAsync("https://api.github.com/repos/ThirteenAG/GTAIV.EFLC.FusionFix/releases/latest");
+                        firstResponseff.EnsureSuccessStatusCode();
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        Logger.Info(" GTA Connected install: installing Shader Fixes...");
-                        if (!Directory.Exists("Files\\ShaderFixes"))
+                        Logger.Error(ex, "Error getting latest release, probably ratelimited");
+                        throw;
+                    }
+                    string firstResponseBodyff = await firstResponseff.Content.ReadAsStringAsync();
+                    var latestff = JsonDocument.Parse(firstResponseBodyff).RootElement.GetProperty("tag_name").GetString();
+                    if (latestff != downloadedff)
+                    {
+                        if (!Directory.Exists("Files\\FusionFix"))
                         {
-                            Logger.Info(" Downloading Shader Fixes...");
-                            Directory.CreateDirectory("Files\\ShaderFixes");
-                            HttpResponseMessage firstResponse1070;
+                            Directory.CreateDirectory("Files\\FusionFix");
+                        }
+                        Logger.Debug(" Downloaded version of FusionFix doesn't match the latest version, downloading...");
+                        var downloadUrlff = JsonDocument.Parse(firstResponseBodyff).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
+                        Download(downloadUrlff!, "Files\\FusionFix", "FusionFix.zip", $"FusionFix {latestff}");
+                        while (!downloadfinished)
+                        {
+                            await Task.Delay(500);
+                        }
+                        downloadfinished = false;
+                        Logger.Debug(" FusionFix downloaded.");
+                        Logger.Info(" Extracting FusionFix...");
+                        ZipFile.ExtractToDirectory("Files\\FusionFix\\FusionFix.zip", "Files\\FusionFix\\", true);
+                        File.Delete("Files\\FusionFix\\FusionFix.zip");
+                        File.Delete("Files\\FusionFix\\dinput8.dll");
+                        File.Move("Files\\FusionFix\\plugins\\GTAIV.EFLC.FusionFix.asi", "Files\\FusionFix\\GTAIV.EFLC.FusionFix.asi", true);
+                        File.Move("Files\\FusionFix\\plugins\\GTAIV.EFLC.FusionFix.ini", "Files\\FusionFix\\GTAIV.EFLC.FusionFix.ini", true);
+                        Directory.Delete("Files\\FusionFix\\plugins");
+                        Logger.Debug(" FusionFix extracted.");
+                        settings["fusionfix"].Value = latestff;
+                        configFile.Save(ConfigurationSaveMode.Modified);
+                        ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
+                        Logger.Debug(" Edited the value in the config.");
+                    }
+                    if (gfwlcheckbox.IsChecked == true || (sp == false && (gfwlmpcheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true)))
+                    {
+                        if (sp == false && ffixmincheckbox.IsChecked == true)
+                        {
+                            #region FF-GFWL-Min
+                            Logger.Info(" Downloading the GFWL-Min Patch for FusionFix...");
+                            HttpResponseMessage firstResponse2;
                             try
                             {
-                                firstResponse1070 = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIVFullDowngradeAssets/releases/135442404");
-                                firstResponse1070.EnsureSuccessStatusCode();
+                                firstResponse2 = await httpClient.GetAsync("https://api.github.com/repos/SandeMC/GTAIV.EFLC.FusionFix-GFWLMin/releases/latest");
+                                firstResponse2.EnsureSuccessStatusCode();
                             }
                             catch (Exception ex)
                             {
                                 Logger.Error(ex, "Error getting latest release, probably ratelimited");
                                 throw;
                             }
-                            var firstResponseBody1070 = await firstResponse1070.Content.ReadAsStringAsync();
-                            var downloadUrl1070 = JsonDocument.Parse(firstResponseBody1070).RootElement.GetProperty("assets")[5].GetProperty("browser_download_url").GetString();
-                            Download(downloadUrl1070!, "Files\\ShaderFixes", "ShaderFixes.zip", "Shader Fixes");
+                            var firstResponseBody2 = await firstResponse2.Content.ReadAsStringAsync();
+                            var downloadUrl2 = JsonDocument.Parse(firstResponseBody2).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
+                            Download(downloadUrl2!, "Files\\FusionFix", "FusionFix-GFWLMin.zip", "FF-GFWLMin");
                             while (!downloadfinished)
                             {
                                 await Task.Delay(500);
                             }
                             downloadfinished = false;
-                            ZipFile.ExtractToDirectory("Files\\ShaderFixes\\ShaderFixes.zip", "Files\\ShaderFixes", true);
-                            File.Delete("Files\\ShaderFixes\\ShaderFixes.zip");
+                            Logger.Debug(" GFWL-Min patch downloaded.");
+                            Logger.Info(" Extracting GFWL-Min patch...");
+                            ZipFile.ExtractToDirectory("Files\\FusionFix\\FusionFix-GFWLMin.zip", "Files\\FusionFix", true);
+                            File.Delete("Files\\FusionFix\\FusionFix-GFWLMin.zip");
+                            Logger.Debug(" GFWL-Min patch extracted.");
+                            #endregion
                         }
-                        Logger.Info(" Copying Shader Fixes...");
-                        CopyFolder("Files\\ShaderFixes\\", $"{directory}");
+                        else
+                        {
+                            #region FF-GFWL
+                            Logger.Info(" Downloading the GFWL Patch for FusionFix...");
+                            HttpResponseMessage firstResponse2;
+                            try
+                            {
+                                firstResponse2 = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIV.EFLC.FusionFix-GFWL/releases/latest");
+                                firstResponse2.EnsureSuccessStatusCode();
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.Error(ex, "Error getting latest release, probably ratelimited");
+                                throw;
+                            }
+                            var firstResponseBody2 = await firstResponse2.Content.ReadAsStringAsync();
+                            var downloadUrl2 = JsonDocument.Parse(firstResponseBody2).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
+                            Download(downloadUrl2!, "Files\\FusionFix", "FusionFix-GFWL.zip", "FF-GFWL");
+                            while (!downloadfinished)
+                            {
+                                await Task.Delay(500);
+                            }
+                            downloadfinished = false;
+                            Logger.Debug(" GFWL patch downloaded.");
+                            Logger.Info(" Extracting GFWL patch...");
+                            ZipFile.ExtractToDirectory("Files\\FusionFix\\FusionFix-GFWL.zip", "Files\\FusionFix", true);
+                            File.Delete("Files\\FusionFix\\FusionFix-GFWL.zip");
+                            Logger.Debug(" GFWL patch extracted.");
+                            #endregion
+                        }
                     }
+                    Logger.Info(" Copying FusionFix & the patches if downloaded any...");
+                    CopyFolder("Files\\FusionFix\\", $"{directory}");
+                    Logger.Debug(" FusionFix copied.");
                 }
-                if (zmenucheckbox.IsChecked == true)
+                else
                 {
-                    if (!Directory.Exists("Files\\ZMenu"))
+                    #region Shader Fixes
+                    Logger.Info(" GTA Connected install: installing Shader Fixes...");
+                    if (!Directory.Exists("Files\\ShaderFixes"))
                     {
-                        Logger.Info(" Downloading ZMenu...");
-                        Directory.CreateDirectory("Files\\ZMenu");
-                        HttpResponseMessage firstResponsezmenu;
+                        Logger.Info(" Downloading Shader Fixes...");
+                        Directory.CreateDirectory("Files\\ShaderFixes");
+                        HttpResponseMessage firstResponse1070;
                         try
                         {
-                            firstResponsezmenu = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIVFullDowngradeAssets/releases/135442404");
-                            firstResponsezmenu.EnsureSuccessStatusCode();
+                            firstResponse1070 = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIVFullDowngradeAssets/releases/135442404");
+                            firstResponse1070.EnsureSuccessStatusCode();
                         }
                         catch (Exception ex)
                         {
                             Logger.Error(ex, "Error getting latest release, probably ratelimited");
                             throw;
                         }
-                        var firstResponseBodyzmenu = await firstResponsezmenu.Content.ReadAsStringAsync();
-                        var downloadUrlzmenu = JsonDocument.Parse(firstResponseBodyzmenu).RootElement.GetProperty("assets")[3].GetProperty("browser_download_url").GetString();
-                        Download(downloadUrlzmenu!, "Files\\ZMenu", "ZMenu.zip", "ZMenu");
+                        var firstResponseBody1070 = await firstResponse1070.Content.ReadAsStringAsync();
+                        var downloadUrl1070 = JsonDocument.Parse(firstResponseBody1070).RootElement.GetProperty("assets")[5].GetProperty("browser_download_url").GetString();
+                        Download(downloadUrl1070!, "Files\\ShaderFixes", "ShaderFixes.zip", "Shader Fixes");
                         while (!downloadfinished)
                         {
                             await Task.Delay(500);
                         }
                         downloadfinished = false;
-                        Logger.Info(" Extracting ZMenu...");
-                        ZipFile.ExtractToDirectory("Files\\ZMenu\\ZMenu.zip", "Files\\ZMenu", true);
-                        File.Delete("Files\\ZMenu\\ZMenu.zip");
+                        Logger.Debug(" Shader Fixes downloaded.");
+                        Logger.Info(" Extracting Shader Fixes...");
+                        ZipFile.ExtractToDirectory("Files\\ShaderFixes\\ShaderFixes.zip", "Files\\ShaderFixes", true);
+                        File.Delete("Files\\ShaderFixes\\ShaderFixes.zip");
+                        Logger.Debug(" Shader Fixes extracted.");
                     }
-                    Logger.Info(" Copying ZMenu...");
-                    CopyFolder("Files\\ZMenu\\", $"{directory}");
+                    Logger.Info(" Copying Shader Fixes...");
+                    CopyFolder("Files\\ShaderFixes\\", $"{directory}");
+                    Logger.Debug(" Shader Fixes copied.");
+                    #endregion
                 }
-                Logger.Info(" Successfully downgraded!");
-                MessageBox.Show("Your game has been downgraded in accordance with selected options!");
-                downgradebtn.Content = "Downgrade";
-                options.IsEnabled = true;
-                version.IsEnabled = true;
-                buttons.IsEnabled = true;
             }
+
+            Logger.Debug(" ### FusionFix checks done. ###");
+            #endregion
+
+            #region ZMenu
+            Logger.Debug(" ### ZMenu checks. ###");
+            if (zmenucheckbox.IsChecked == true)
+            {
+                if (!Directory.Exists("Files\\ZMenu"))
+                {
+                    Logger.Info(" Downloading ZMenu...");
+                    Directory.CreateDirectory("Files\\ZMenu");
+                    HttpResponseMessage firstResponsezmenu;
+                    try
+                    {
+                        firstResponsezmenu = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIVFullDowngradeAssets/releases/135442404");
+                        firstResponsezmenu.EnsureSuccessStatusCode();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Error(ex, "Error getting latest release, probably ratelimited");
+                        throw;
+                    }
+                    var firstResponseBodyzmenu = await firstResponsezmenu.Content.ReadAsStringAsync();
+                    var downloadUrlzmenu = JsonDocument.Parse(firstResponseBodyzmenu).RootElement.GetProperty("assets")[3].GetProperty("browser_download_url").GetString();
+                    Download(downloadUrlzmenu!, "Files\\ZMenu", "ZMenu.zip", "ZMenu");
+                    while (!downloadfinished)
+                    {
+                        await Task.Delay(500);
+                    }
+                    downloadfinished = false;
+                    Logger.Debug(" ZMenu downloaded.");
+                    Logger.Info(" Extracting ZMenu...");
+                    ZipFile.ExtractToDirectory("Files\\ZMenu\\ZMenu.zip", "Files\\ZMenu", true);
+                    File.Delete("Files\\ZMenu\\ZMenu.zip");
+                    Logger.Debug(" ZMenu extracted.");
+                }
+                Logger.Info(" Copying ZMenu...");
+                CopyFolder("Files\\ZMenu\\", $"{directory}");
+                Logger.Debug(" ZMenu copied.");
+            }
+
+            Logger.Debug(" ### ZMenu checks done. ###");
+            #endregion
+
+            Logger.Info(" Successfully downgraded!");
+            MessageBox.Show("Your game has been downgraded in accordance with selected options!");
+            downgradebtn.Content = "Downgrade";
+            options.IsEnabled = true;
+            version.IsEnabled = true;
+            buttons.IsEnabled = true;
         }
+        #endregion
     }
 }
