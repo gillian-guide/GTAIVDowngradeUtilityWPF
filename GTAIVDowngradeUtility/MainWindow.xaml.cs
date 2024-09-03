@@ -901,6 +901,122 @@ namespace GTAIVDowngradeUtilityWPF
 
             // actually downgrading now
 
+            #region Ultimate ASI Loader
+            Logger.Debug(" ### Ultimate ASI Loader checks. ### ");
+
+            // ultimate asi loader
+            if (zpatchcheckbox.IsChecked == true || ffixcheckbox.IsChecked == true || achievementscheckbox.IsChecked == true || xlivelesscheckbox.IsChecked == true || zmenucheckbox.IsChecked == true)
+            {
+                Logger.Info(" Installing Ultimate ASI Loader...");
+                string downloadedual = settings["ultimate-asi-loader"].Value;
+                if (!File.Exists("Files\\Shared\\dinput8.dll") || !File.Exists("Files\\Shared\\xlive.dll"))
+                {
+                    settings["ultimate-asi-loader"].Value = "";
+                    configFile.Save(ConfigurationSaveMode.Modified);
+                    ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
+                    Logger.Debug(" Ultimate ASI Loader not downloaded - changed the value of downloaded ual to none.");
+                }
+                HttpResponseMessage firstResponseual;
+                try
+                {
+                    firstResponseual = await httpClient.GetAsync("https://api.github.com/repos/ThirteenAG/Ultimate-ASI-Loader/releases/latest");
+                    firstResponseual.EnsureSuccessStatusCode();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex, "Error getting latest release, probably ratelimited");
+                    throw;
+                }
+                var firstResponseBodyual = await firstResponseual.Content.ReadAsStringAsync();
+                var latestual = JsonDocument.Parse(firstResponseBodyual).RootElement.GetProperty("tag_name").GetString();
+                if (latestual != downloadedual)
+                {
+                    Logger.Debug(" Latest UAL not matching to downloaded, downloading...");
+                    var downloadUrlual = JsonDocument.Parse(firstResponseBodyual).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
+                    Download(downloadUrlual!, "Files\\Shared", "Ultimate-ASI-Loader.zip", $"UAL {latestual}");
+                    while (!downloadfinished)
+                    {
+                        await Task.Delay(500);
+                    }
+                    Logger.Debug(" UAL downloaded.");
+                    downloadfinished = false;
+                    Logger.Info(" Extracting UAL...");
+                    ZipFile.ExtractToDirectory("Files\\Shared\\Ultimate-ASI-Loader.zip", "Files\\Shared\\", true);
+                    File.Delete("Files\\Shared\\Ultimate-ASI-Loader.zip");
+                    settings["ultimate-asi-loader"].Value = latestual;
+                    configFile.Save(ConfigurationSaveMode.Modified);
+                    ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
+                    Logger.Debug(" Edited the value in the config.");
+
+                }
+
+                Logger.Info(" Renaming unmatching UAL names if exist...");
+                if (gfwlcheckbox.IsChecked == false || (sp == false && (gfwlmpcheckbox.IsChecked == false && gtacgfwlcheckbox.IsChecked == false)))
+                {
+                    if (File.Exists("Files\\Shared\\dinput8.dll"))
+                    {
+                        Logger.Debug(" Renaming dinput8.dll to xlive.dll...");
+                        File.Move("Files\\Shared\\dinput8.dll", "Files\\Shared\\xlive.dll", true);
+                        Logger.Debug(" Renamed dinput8.dll to xlive.dll.");
+                    }
+                    if (File.Exists($"{directory}\\dinput8.dll"))
+                    {
+                        Logger.Debug(" Renaming xlive.dll to dinput8.dll...");
+                        File.Move($"{directory}\\dinput8.dll", $"{directory}\\xlive.dll", true);
+                        Logger.Debug(" Renamed xlive.dll to dinput8.dll.");
+                    }
+                    if (xlivelesscheckbox.IsChecked == true && sp)
+                    {
+                        Logger.Debug(" Copying XLivelessAddon...");
+                        CopyFolder("Files\\XLivelessAddon", directory);
+                        Logger.Debug(" Copied XLivelessAddon.");
+                    }
+                }
+                else if (gfwlcheckbox.IsChecked == true || (sp == false && (gfwlmpcheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true)))
+                {
+                    if (File.Exists("Files\\Shared\\xlive.dll"))
+                    {
+                        Logger.Debug(" Renaming xlive.dll to dinput8.dll...");
+                        File.Move("Files\\Shared\\xlive.dll", "Files\\Shared\\dinput8.dll", true);
+                        Logger.Debug(" Renamed xlive.dll to dinput8.dll.");
+                    }
+                    if (File.Exists($"{directory}\\xlive.dll"))
+                    {
+                        Logger.Debug(" Renaming xlive.dll to dinput8.dll...");
+                        File.Move($"{directory}\\xlive.dll", $"{directory}\\dinput8.dll", true);
+                        Logger.Debug(" Renamed xlive.dll to dinput8.dll.");
+                    }
+                }
+                if (File.Exists($"{directory}\\dsound.dll"))
+                {
+                    Logger.Debug(" Removing dsound.dll from the game folder to avoid incompatibility...");
+                    File.Delete($"{directory}\\dsound.dll");
+                    Logger.Debug(" dsound.dll removed");
+                }
+            }
+
+            Logger.Debug(" ### Ultimate ASI Loader checks done. ### ");
+            #endregion
+
+            #region GTAIV.exe
+
+            Logger.Debug(" ### Moving over GTAIV.exe. ###");
+            if (patch8click.IsChecked == true)
+            {
+                Logger.Debug(" Copying 1.0.8.0 GTAIV.exe...");
+                File.Copy("Files\\1080\\GTAIV.exe", $"{directory}\\GTAIV.exe", true);
+                Logger.Debug(" Copied 1.0.8.0 GTAIV.exe.");
+            }
+            else
+            {
+                Logger.Debug(" Copying 1.0.7.0 GTAIV.exe...");
+                File.Copy("Files\\1070\\GTAIV.exe", $"{directory}\\GTAIV.exe", true);
+                Logger.Debug(" Copied 1.0.7.0 GTAIV.exe.");
+            }
+
+            Logger.Debug(" ### Moving over GTAIV.exe done. ###");
+            #endregion
+
             #region Shared Files
             Logger.Debug(" ### Copying shared files. ### ");
 
@@ -938,25 +1054,6 @@ namespace GTAIVDowngradeUtilityWPF
             Logger.Debug(" Shared files copied.");
 
             Logger.Debug(" ### Copying shared files done. ### ");
-            #endregion
-
-            #region GTAIV.exe
-
-            Logger.Debug(" ### Moving over GTAIV.exe. ###");
-            if (patch8click.IsChecked == true)
-            {
-                Logger.Debug(" Copying 1.0.8.0 GTAIV.exe...");
-                File.Copy("Files\\1080\\GTAIV.exe", $"{directory}\\GTAIV.exe", true);
-                Logger.Debug(" Copied 1.0.8.0 GTAIV.exe.");
-            }
-            else
-            {
-                Logger.Debug(" Copying 1.0.7.0 GTAIV.exe...");
-                File.Copy("Files\\1070\\GTAIV.exe", $"{directory}\\GTAIV.exe", true);
-                Logger.Debug(" Copied 1.0.7.0 GTAIV.exe.");
-            }
-
-            Logger.Debug(" ### Moving over GTAIV.exe done. ###");
             #endregion
 
             #region GFWL
@@ -1062,103 +1159,6 @@ namespace GTAIVDowngradeUtilityWPF
             }
 
             Logger.Debug(" ### Full files checks done. ###");
-            #endregion
-
-            #region Ultimate ASI Loader
-            Logger.Debug(" ### Ultimate ASI Loader checks. ### ");
-
-            // ultimate asi loader
-            if (zpatchcheckbox.IsChecked == true || ffixcheckbox.IsChecked == true || achievementscheckbox.IsChecked == true || xlivelesscheckbox.IsChecked == true || zmenucheckbox.IsChecked == true)
-            {
-                Logger.Info(" Installing Ultimate ASI Loader...");
-                string downloadedual = settings["ultimate-asi-loader"].Value;
-                if (!File.Exists("Files\\Shared\\dinput8.dll") || !File.Exists("Files\\Shared\\xlive.dll"))
-                {
-                    settings["ultimate-asi-loader"].Value = "";
-                    configFile.Save(ConfigurationSaveMode.Modified);
-                    ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
-                    Logger.Debug(" Ultimate ASI Loader not downloaded - changed the value of downloaded ual to none.");
-                }
-                HttpResponseMessage firstResponseual;
-                try
-                {
-                    firstResponseual = await httpClient.GetAsync("https://api.github.com/repos/ThirteenAG/Ultimate-ASI-Loader/releases/latest");
-                    firstResponseual.EnsureSuccessStatusCode();
-                }
-                catch (Exception ex)
-                {
-                    Logger.Error(ex, "Error getting latest release, probably ratelimited");
-                    throw;
-                }
-                var firstResponseBodyual = await firstResponseual.Content.ReadAsStringAsync();
-                var latestual = JsonDocument.Parse(firstResponseBodyual).RootElement.GetProperty("tag_name").GetString();
-                if (latestual != downloadedual)
-                {
-                    Logger.Debug(" Latest UAL not matching to downloaded, downloading...");
-                    var downloadUrlual = JsonDocument.Parse(firstResponseBodyual).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
-                    Download(downloadUrlual!, "Files\\Shared", "Ultimate-ASI-Loader.zip", $"UAL {latestual}");
-                    while (!downloadfinished)
-                    {
-                        await Task.Delay(500);
-                    }
-                    Logger.Debug(" UAL downloaded.");
-                    downloadfinished = false;
-                    Logger.Info(" Extracting UAL...");
-                    ZipFile.ExtractToDirectory("Files\\Shared\\Ultimate-ASI-Loader.zip", "Files\\Shared\\", true);
-                    File.Delete("Files\\Shared\\Ultimate-ASI-Loader.zip");
-                    settings["ultimate-asi-loader"].Value = latestual;
-                    configFile.Save(ConfigurationSaveMode.Modified);
-                    ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
-                    Logger.Debug(" Edited the value in the config.");
-
-                }
-
-                Logger.Info(" Renaming unmatching UAL names if exist...");
-                if (gfwlcheckbox.IsChecked == false || (sp == false && (gfwlmpcheckbox.IsChecked == false && gtacgfwlcheckbox.IsChecked == false)))
-                {
-                    if (File.Exists("Files\\Shared\\dinput8.dll"))
-                    {
-                        Logger.Debug(" Renaming dinput8.dll to xlive.dll...");
-                        File.Move("Files\\Shared\\dinput8.dll", "Files\\Shared\\xlive.dll", true);
-                        Logger.Debug(" Renamed dinput8.dll to xlive.dll.");
-                    }
-                    if (File.Exists($"{directory}\\dinput8.dll"))
-                    {
-                        Logger.Debug(" Renaming xlive.dll to dinput8.dll...");
-                        File.Move($"{directory}\\dinput8.dll", $"{directory}\\xlive.dll", true);
-                        Logger.Debug(" Renamed xlive.dll to dinput8.dll.");
-                    }
-                    if (xlivelesscheckbox.IsChecked == true && sp)
-                    {
-                        Logger.Debug(" Copying XLivelessAddon...");
-                        CopyFolder("Files\\XLivelessAddon", directory);
-                        Logger.Debug(" Copied XLivelessAddon.");
-                    }
-                }
-                else if (gfwlcheckbox.IsChecked == true || (sp == false && (gfwlmpcheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true)))
-                {
-                    if (File.Exists("Files\\Shared\\xlive.dll"))
-                    {
-                        Logger.Debug(" Renaming xlive.dll to dinput8.dll...");
-                        File.Move("Files\\Shared\\xlive.dll", "Files\\Shared\\dinput8.dll", true);
-                        Logger.Debug(" Renamed xlive.dll to dinput8.dll.");
-                    }
-                    if (File.Exists($"{directory}\\xlive.dll"))
-                    {
-                        Logger.Debug(" Renaming xlive.dll to dinput8.dll...");
-                        File.Move($"{directory}\\xlive.dll", $"{directory}\\dinput8.dll", true);
-                        Logger.Debug(" Renamed xlive.dll to dinput8.dll.");
-                    }
-                }
-                if (File.Exists($"{directory}\\dsound.dll"))
-                {
-                    Logger.Debug(" Removing dsound.dll from the game folder to avoid incompatibility...");
-                    File.Delete($"{directory}\\dsound.dll");
-                    Logger.Debug(" dsound.dll removed");
-                }
-            }
-
-            Logger.Debug(" ### Ultimate ASI Loader checks done. ### ");
             #endregion
 
             #region Steam Achievements
@@ -1301,7 +1301,7 @@ namespace GTAIVDowngradeUtilityWPF
                             HttpResponseMessage firstResponse2;
                             try
                             {
-                                firstResponse2 = await httpClient.GetAsync("https://api.github.com/repos/SandeMC/GTAIV.EFLC.FusionFix-GFWLMin/releases/latest");
+                                firstResponse2 = await httpClient.GetAsync("https://api.github.com/repos/gillian-guide/GTAIV.EFLC.FusionFix-GFWLMin/releases/latest");
                                 firstResponse2.EnsureSuccessStatusCode();
                             }
                             catch (Exception ex)
