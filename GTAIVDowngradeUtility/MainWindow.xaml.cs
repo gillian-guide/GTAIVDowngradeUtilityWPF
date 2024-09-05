@@ -122,7 +122,6 @@ namespace GTAIVDowngradeUtilityWPF
                 if (advancedcheck.IsChecked == true)
                 {
                     xlivelesscheckbox.Visibility = Visibility.Visible;
-                    version.Visibility = Visibility.Visible;
                 }
                 zpatchcheckbox.IsEnabled = true;
                 gfwlmpcheckbox.IsChecked = false;
@@ -136,11 +135,12 @@ namespace GTAIVDowngradeUtilityWPF
                 mpspbtn.Content = "Switch to singleplayer";
                 sp = false;
                 gfwlcheckbox.Visibility = Visibility.Collapsed;
+                gfwlcheckbox.IsChecked = false;
                 gfwlmpcheckbox.Visibility = Visibility.Visible;
                 gtaccheckbox.Visibility = Visibility.Visible;
                 gtacgfwlcheckbox.Visibility = Visibility.Visible;
                 xlivelesscheckbox.Visibility = Visibility.Collapsed;
-                version.Visibility = Visibility.Collapsed;
+                xlivelesscheckbox.IsChecked = false;
                 zpatchcheckbox.IsEnabled = false;
                 zpatchcheckbox.IsChecked = true;
                 ffixmincheckbox.Visibility = Visibility.Visible;
@@ -156,7 +156,6 @@ namespace GTAIVDowngradeUtilityWPF
             {
                 if (sp == true)
                 {
-                    version.Visibility = Visibility.Visible;
                     xlivelesscheckbox.Visibility = Visibility.Visible;
                 }
                 fullcheckbox.Visibility = Visibility.Visible;
@@ -167,11 +166,13 @@ namespace GTAIVDowngradeUtilityWPF
             }
             else
             {
-                version.Visibility = Visibility.Collapsed;
                 fullcheckbox.Visibility = Visibility.Collapsed;
+                fullcheckbox.IsChecked = false;
                 radiocheckbox.Visibility = Visibility.Collapsed;
+                radiocheckbox.IsChecked = false;
                 achievementscheckbox.Visibility = Visibility.Collapsed;
                 xlivelesscheckbox.Visibility = Visibility.Collapsed;
+                xlivelesscheckbox.IsChecked = false;
                 zpatchcheckbox.Visibility = Visibility.Collapsed;
                 tipsnote.Visibility = Visibility.Collapsed;
             }
@@ -181,6 +182,24 @@ namespace GTAIVDowngradeUtilityWPF
                 MessageBox.Show("Advanced Mode enables all toggles. They're hidden by default as the defaults for these options are fine for majority.\n\nDon't touch these toggles if you have no idea what you're doing and read the tips.");
             }
         }
+
+        private void aboutButton_Click(object sender, RoutedEventArgs e)
+        {
+            Logger.Debug(" User opened the About window.");
+            var configFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            var settings = configFile.AppSettings.Settings;
+            string fusionfix = settings["fusionfix"].Value;
+            string ual = settings["ultimate-asi-loader"].Value;
+            MessageBox.Show(
+                "This software is made by Gillian for the RevIVal Community and the Modding Guide.\n\n" +
+                $"Downloaded Ultimate ASI Loader: {ual}\n" +
+                $"Downloaded FusionFix: {fusionfix}\n" +
+                $"Version: {GetAssemblyVersion()}",
+                "Information");
+        }
+        #endregion
+
+        #region Helpers
 
         private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
         {
@@ -194,9 +213,7 @@ namespace GTAIVDowngradeUtilityWPF
             };
             Process.Start(psi);
         }
-        #endregion
 
-        #region Helpers
         private static void Empty(System.IO.DirectoryInfo directory)
         {
             foreach (System.IO.FileInfo file in directory.GetFiles()) { file.Delete(); }
@@ -282,7 +299,7 @@ namespace GTAIVDowngradeUtilityWPF
         private void gfwlmp_Click(object sender, RoutedEventArgs e)
         {
             Logger.Debug(" User toggled GFWL for Multiplayer.");
-            if (gfwlcheckbox.IsChecked == false)
+            if (gfwlmpcheckbox.IsChecked == false)
             {
                 if (achievementscheckbox.IsEnabled == true)
                 {
@@ -482,22 +499,6 @@ namespace GTAIVDowngradeUtilityWPF
                 MessageBox.Show("This option adds a few additions to xliveless.\n\nOnly available if not setting up for GFWL.");
             }
         }
-
-
-        private void aboutButton_Click(object sender, RoutedEventArgs e)
-        {
-            Logger.Debug(" User opened the About window.");
-            var configFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            var settings = configFile.AppSettings.Settings;
-            string fusionfix = settings["fusionfix"].Value;
-            string ual = settings["ultimate-asi-loader"].Value;
-            MessageBox.Show(
-                "This software is made by Gillian for the RevIVal Community and the Modding Guide.\n\n" +
-                $"Downloaded Ultimate ASI Loader: {ual}\n" +
-                $"Downloaded FusionFix: {fusionfix}\n" +
-                $"Version: {GetAssemblyVersion()}",
-                "Information");
-        }
         #endregion
 
         #region SelectingFolder
@@ -635,6 +636,7 @@ namespace GTAIVDowngradeUtilityWPF
         #region Downgrading
         private async void downgrade_Click(object sender, RoutedEventArgs e)
         {
+            bool gfwl = (sp == true && gfwlcheckbox.IsChecked == true) || (sp == false && (gfwlmpcheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true));
             options.IsEnabled = false;
             version.IsEnabled = false;
             buttons.IsEnabled = false;
@@ -809,7 +811,7 @@ namespace GTAIVDowngradeUtilityWPF
 
             Logger.Debug(" Redistributables checked.");
 
-            if (!isvc || (!isgfwl && (gfwlcheckbox.IsChecked == true || (sp == false && (gfwlmpcheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true)))))
+            if (!isvc || (!isgfwl && gfwl))
             {
                 Logger.Info(" Some redistributable not found...");
                 if (!Directory.Exists("Files\\Redist"))
@@ -856,7 +858,10 @@ namespace GTAIVDowngradeUtilityWPF
                     await vcredist.WaitForExitAsync();
                     Logger.Debug(" VC++ installed.");
                 }
-                if (!isgfwl && (gfwlcheckbox.IsChecked == true || (sp == false && (gfwlmpcheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true)))) { Logger.Info(" Installing GFWL redistributables..."); await Process.Start($"Files\\Redist\\gfwlivesetup.exe").WaitForExitAsync(); Logger.Debug(" GFWL installed."); }
+                if (!isgfwl && gfwl)
+                {
+                    Logger.Info(" Installing GFWL redistributables..."); await Process.Start($"Files\\Redist\\gfwlivesetup.exe").WaitForExitAsync(); Logger.Debug(" GFWL installed.");
+                }
             }
             else
             {
@@ -909,7 +914,7 @@ namespace GTAIVDowngradeUtilityWPF
             {
                 Logger.Info(" Installing Ultimate ASI Loader...");
                 string downloadedual = settings["ultimate-asi-loader"].Value;
-                if (!File.Exists("Files\\Shared\\dinput8.dll") || !File.Exists("Files\\Shared\\xlive.dll"))
+                if (!File.Exists("Files\\Shared\\dinput8.dll") && !File.Exists("Files\\Shared\\xlive.dll"))
                 {
                     settings["ultimate-asi-loader"].Value = "";
                     configFile.Save(ConfigurationSaveMode.Modified);
@@ -951,7 +956,7 @@ namespace GTAIVDowngradeUtilityWPF
                 }
 
                 Logger.Info(" Renaming unmatching UAL names if exist...");
-                if (gfwlcheckbox.IsChecked == false || (sp == false && (gfwlmpcheckbox.IsChecked == false && gtacgfwlcheckbox.IsChecked == false)))
+                if (!gfwl)
                 {
                     if (File.Exists("Files\\Shared\\dinput8.dll"))
                     {
@@ -972,7 +977,7 @@ namespace GTAIVDowngradeUtilityWPF
                         Logger.Debug(" Copied XLivelessAddon.");
                     }
                 }
-                else if (gfwlcheckbox.IsChecked == true || (sp == false && (gfwlmpcheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true)))
+                else if (gfwl)
                 {
                     if (File.Exists("Files\\Shared\\xlive.dll"))
                     {
@@ -1020,7 +1025,6 @@ namespace GTAIVDowngradeUtilityWPF
             #region Shared Files
             Logger.Debug(" ### Copying shared files. ### ");
 
-            Logger.Info(" Copying shared files...");
             if (!File.Exists("Files\\Shared\\PlayGTAIV.exe"))
             {
                 Logger.Debug(" Downloading shared files due to being missing...");
@@ -1048,8 +1052,7 @@ namespace GTAIVDowngradeUtilityWPF
                 ZipFile.ExtractToDirectory("Files\\BaseAssets.zip", "Files", true);
                 File.Delete("Files\\BaseAssets.zip");
             }
-
-            Logger.Info(" Copying shared files (including UAL)...");
+            Logger.Info(" Copying shared files...");
             CopyFolder("Files\\Shared", directory);
             Logger.Debug(" Shared files copied.");
 
@@ -1058,7 +1061,7 @@ namespace GTAIVDowngradeUtilityWPF
 
             #region GFWL
             Logger.Debug(" ### GFWL checks. ###");
-            if (gfwlcheckbox.IsChecked == true || (sp == false && (gfwlmpcheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true)))
+            if (gfwl)
             {
                 Logger.Info(" Copying shared GFWL files...");
                 CopyFolder("Files\\GFWL\\Shared", directory);
@@ -1181,7 +1184,7 @@ namespace GTAIVDowngradeUtilityWPF
 
             if (gtacgfwlcheckbox.IsChecked == true && ffixcheckbox.IsChecked == true)
             {
-                MessageBoxResult result = MessageBox.Show("Press 'Yes' if you want to install FusionFix (it will not initialize in GTAC, but only GFWL). Press 'No' to only install Shader Fixes (which will work in both).", "No radio downgrader found", MessageBoxButton.YesNo);
+                MessageBoxResult result = MessageBox.Show("Press 'Yes' if you want to install FusionFix (it will not initialize in GTAC, but only GFWL). Press 'No' to only install Shader Fixes (which will work in both).", "FusionFix in GTAC", MessageBoxButton.YesNo);
                 if (result == MessageBoxResult.Yes)
                 {
                     gtacgfwlff = true;
@@ -1198,9 +1201,9 @@ namespace GTAIVDowngradeUtilityWPF
                 File.Copy("Files\\ZolikaPatch\\ZolikaPatch.asi", $"{directory}\\ZolikaPatch.asi", true);
                 Logger.Debug(" ZolikaPatch asi copied.");
 
-                bool gfwl = (sp == false && (gfwlmpcheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true || gtaccheckbox.IsChecked == true));
-                bool ffix = ((sp == true && ffixcheckbox.IsChecked == true) || (sp == false && (gtacgfwlcheckbox.IsChecked == true && gtacgfwlff == true)) || ((gfwl && !gtacgfwlff) && ffixcheckbox.IsChecked == true));
-                switch (ffix, gfwl)
+                bool gfwlzz = (sp == false && (gfwlmpcheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true));
+                bool ffix = (gtacgfwlff && ffixcheckbox.IsChecked == true);
+                switch (ffix, gfwlzz)
                 {
                     case (true, true):
                         {
@@ -1292,7 +1295,7 @@ namespace GTAIVDowngradeUtilityWPF
                         ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
                         Logger.Debug(" Edited the value in the config.");
                     }
-                    if (gfwlcheckbox.IsChecked == true || (sp == false && (gfwlmpcheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true)))
+                    if (gfwl)
                     {
                         if (sp == false && ffixmincheckbox.IsChecked == true)
                         {
