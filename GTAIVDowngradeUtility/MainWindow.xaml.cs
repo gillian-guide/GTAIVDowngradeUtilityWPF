@@ -128,6 +128,7 @@ namespace GTAIVDowngradeUtilityWPF
                 gtaccheckbox.IsChecked = false;
                 gtacgfwlcheckbox.IsChecked = false;
                 ffixmincheckbox.IsChecked = false;
+                zmenucheckbox.IsChecked = false;
                 gtrf.Visibility = Visibility.Collapsed;
             }
             else
@@ -144,6 +145,8 @@ namespace GTAIVDowngradeUtilityWPF
                 zpatchcheckbox.IsEnabled = false;
                 zpatchcheckbox.IsChecked = true;
                 ffixmincheckbox.Visibility = Visibility.Visible;
+                ffixmincheckbox.IsChecked = true;
+                zmenucheckbox.IsChecked = true;
                 gfwlmpcheckbox.IsChecked = true;
                 gtrf.Visibility = Visibility.Visible;
             }
