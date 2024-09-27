@@ -166,6 +166,7 @@ namespace GTAIVDowngradeUtilityWPF
                 radiocheckbox.Visibility = Visibility.Visible;
                 achievementscheckbox.Visibility = Visibility.Visible;
                 tipsnote.Visibility = Visibility.Visible;
+                version.Visibility = Visibility.Visible;
             }
             else
             {
@@ -178,6 +179,7 @@ namespace GTAIVDowngradeUtilityWPF
                 xlivelesscheckbox.IsChecked = false;
                 zpatchcheckbox.Visibility = Visibility.Collapsed;
                 tipsnote.Visibility = Visibility.Collapsed;
+                version.Visibility = Visibility.Collapsed;
             }
             if (tipscheck.IsChecked == true && advancedcheck.IsChecked == true)
             {
