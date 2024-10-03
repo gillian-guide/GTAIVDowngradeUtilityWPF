@@ -705,7 +705,7 @@ namespace GTAIVDowngradeUtilityWPF
                             MessageBoxResult result2 = MessageBox.Show("Press 'Yes' after installing the downgrader (at the bottom of the page).\n\nPress 'No' to cancel downgrading.", "No radio downgrader found", MessageBoxButton.YesNo);
                             if (result2 == MessageBoxResult.Yes)
                             {
-                                if (!File.Exists($"{directory}\\update\\pc\\audio\\sfx\\radio_ny_classics.rpf"))
+                                if (!File.Exists($"{directory}\\update\\pc\\audio\\sfx\\RADIO_RESTORATION.rpf"))
                                 {
                                     MessageBox.Show("Radio downgrader not detected in the game folder. Try again.");
                                 }
