@@ -687,7 +687,7 @@ namespace GTAIVDowngradeUtilityWPF
             if (radiocheckbox.IsChecked == true)
             {
                 Logger.Info(" Downgrading radio...");
-                if (ffixcheckbox.IsChecked == true && !File.Exists($"{directory}\\update\\pc\\audio\\sfx\\radio_ny_classics.rpf"))
+                if (ffixcheckbox.IsChecked == true && !File.Exists($"{directory}\\update\\pc\\audio\\sfx\\RADIO_RESTORATION.rpf"))
                 {
                     MessageBoxResult result = MessageBox.Show("You chose to downgrade radio, but you don't have any downgrader downloaded.\n\nDo you wish to download one now? (you will be sent to download a downgrader that matches your options; selecting no will cancel downgrading)", "No radio downgrader found", MessageBoxButton.YesNo);
                     if (result == MessageBoxResult.Yes)
@@ -695,14 +695,14 @@ namespace GTAIVDowngradeUtilityWPF
                         ProcessStartInfo psi = new ProcessStartInfo
                         {
                             FileName = "cmd",
-                            Arguments = $"/c start {"http://downgraders.rockstarvision.com/"}",
+                            Arguments = $"/c start {"https://github.com/Tomasak/GTA-Downgraders/releases/tag/iv-latest"}",
                             CreateNoWindow = true,
                             UseShellExecute = false,
                         };
                         Process.Start(psi);
                         while (true)
                         {
-                            MessageBoxResult result2 = MessageBox.Show("Press 'Yes' after installing the downgrader (at the bottom of the page).\n\nPress 'No' to cancel downgrading.", "No radio downgrader found", MessageBoxButton.YesNo);
+                            MessageBoxResult result2 = MessageBox.Show("Press 'Yes' after installing the downgrader manually.\n\nPress 'No' to cancel downgrading.", "No radio downgrader found", MessageBoxButton.YesNo);
                             if (result2 == MessageBoxResult.Yes)
                             {
                                 if (!File.Exists($"{directory}\\update\\pc\\audio\\sfx\\RADIO_RESTORATION.rpf"))
