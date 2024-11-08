@@ -1247,65 +1247,68 @@ namespace GTAIVDowngradeUtilityWPF
             Logger.Debug(" ### FusionFix checks. ###");
             if (ffixcheckbox.IsChecked == true)
             {
-                if (sp == true || (sp == false && gtaccheckbox.IsChecked == false))
+                if (!gfwl)
                 {
-                    Logger.Info(" Not GTA Connected install: installing FusionFix...");
-                    string downloadedff = settings["fusionfix"].Value;
-                    if (!File.Exists("Files\\FusionFix\\GTAIV.EFLC.FusionFix.asi"))
+                    if (sp == true || (sp == false && gtaccheckbox.IsChecked == false))
                     {
-                        settings["fusionfix"].Value = "";
-                        configFile.Save(ConfigurationSaveMode.Modified);
-                        ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
-                        Logger.Debug(" FusionFix not downloaded - changed the value of downloaded ffix to null.");
-                    }
-                    HttpResponseMessage firstResponseff;
-                    try
-                    {
-                        Logger.Debug(" Receiving latest release...");
-                        firstResponseff = await httpClient.GetAsync("https://api.github.com/repos/ThirteenAG/GTAIV.EFLC.FusionFix/releases/latest");
-                        firstResponseff.EnsureSuccessStatusCode();
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.Error(ex, "Error getting latest release, probably ratelimited");
-                        throw;
-                    }
-                    string firstResponseBodyff = await firstResponseff.Content.ReadAsStringAsync();
-                    var latestff = JsonDocument.Parse(firstResponseBodyff).RootElement.GetProperty("tag_name").GetString();
-                    if (latestff != downloadedff)
-                    {
-                        if (!Directory.Exists("Files\\FusionFix"))
+                        Logger.Info(" Not GTA Connected install: installing FusionFix...");
+                        string downloadedff = settings["fusionfix"].Value;
+                        if (!File.Exists("Files\\FusionFix\\GTAIV.EFLC.FusionFix.asi"))
                         {
-                            Directory.CreateDirectory("Files\\FusionFix");
+                            settings["fusionfix"].Value = "";
+                            configFile.Save(ConfigurationSaveMode.Modified);
+                            ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
+                            Logger.Debug(" FusionFix not downloaded - changed the value of downloaded ffix to null.");
                         }
-                        Logger.Debug(" Downloaded version of FusionFix doesn't match the latest version, downloading...");
-                        var downloadUrlff = JsonDocument.Parse(firstResponseBodyff).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
-                        Download(downloadUrlff!, "Files\\FusionFix", "FusionFix.zip", $"FusionFix {latestff}");
-                        while (!downloadfinished)
+                        HttpResponseMessage firstResponseff;
+                        try
                         {
-                            await Task.Delay(500);
+                            Logger.Debug(" Receiving latest release...");
+                            firstResponseff = await httpClient.GetAsync("https://api.github.com/repos/ThirteenAG/GTAIV.EFLC.FusionFix/releases/latest");
+                            firstResponseff.EnsureSuccessStatusCode();
                         }
-                        downloadfinished = false;
-                        Logger.Debug(" FusionFix downloaded.");
-                        Logger.Info(" Extracting FusionFix...");
-                        ZipFile.ExtractToDirectory("Files\\FusionFix\\FusionFix.zip", "Files\\FusionFix\\", true);
-                        File.Delete("Files\\FusionFix\\FusionFix.zip");
-                        File.Delete("Files\\FusionFix\\dinput8.dll");
-                        File.Move("Files\\FusionFix\\plugins\\GTAIV.EFLC.FusionFix.asi", "Files\\FusionFix\\GTAIV.EFLC.FusionFix.asi", true);
-                        File.Move("Files\\FusionFix\\plugins\\GTAIV.EFLC.FusionFix.ini", "Files\\FusionFix\\GTAIV.EFLC.FusionFix.ini", true);
-                        Directory.Delete("Files\\FusionFix\\plugins");
-                        Logger.Debug(" FusionFix extracted.");
-                        settings["fusionfix"].Value = latestff;
-                        configFile.Save(ConfigurationSaveMode.Modified);
-                        ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
-                        Logger.Debug(" Edited the value in the config.");
+                        catch (Exception ex)
+                        {
+                            Logger.Error(ex, "Error getting latest release, probably ratelimited");
+                            throw;
+                        }
+                        string firstResponseBodyff = await firstResponseff.Content.ReadAsStringAsync();
+                        var latestff = JsonDocument.Parse(firstResponseBodyff).RootElement.GetProperty("tag_name").GetString();
+                        if (latestff != downloadedff)
+                        {
+                            if (!Directory.Exists("Files\\FusionFix"))
+                            {
+                                Directory.CreateDirectory("Files\\FusionFix");
+                            }
+                            Logger.Debug(" Downloaded version of FusionFix doesn't match the latest version, downloading...");
+                            var downloadUrlff = JsonDocument.Parse(firstResponseBodyff).RootElement.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
+                            Download(downloadUrlff!, "Files\\FusionFix", "FusionFix.zip", $"FusionFix {latestff}");
+                            while (!downloadfinished)
+                            {
+                                await Task.Delay(500);
+                            }
+                            downloadfinished = false;
+                            Logger.Debug(" FusionFix downloaded.");
+                            Logger.Info(" Extracting FusionFix...");
+                            ZipFile.ExtractToDirectory("Files\\FusionFix\\FusionFix.zip", "Files\\FusionFix\\", true);
+                            File.Delete("Files\\FusionFix\\FusionFix.zip");
+                            File.Delete("Files\\FusionFix\\dinput8.dll");
+                            File.Move("Files\\FusionFix\\plugins\\GTAIV.EFLC.FusionFix.asi", "Files\\FusionFix\\GTAIV.EFLC.FusionFix.asi", true);
+                            File.Move("Files\\FusionFix\\plugins\\GTAIV.EFLC.FusionFix.ini", "Files\\FusionFix\\GTAIV.EFLC.FusionFix.ini", true);
+                            Directory.Delete("Files\\FusionFix\\plugins");
+                            Logger.Debug(" FusionFix extracted.");
+                            settings["fusionfix"].Value = latestff;
+                            configFile.Save(ConfigurationSaveMode.Modified);
+                            ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
+                            Logger.Debug(" Edited the value in the config.");
+                        }
                     }
-                    if (gfwl)
+                    else
                     {
                         if (sp == false && ffixmincheckbox.IsChecked == true)
                         {
                             #region FF-GFWL-Min
-                            Logger.Info(" Downloading the GFWL-Min Patch for FusionFix...");
+                            Logger.Info(" Downloading FusionFix-GFWLMin...");
                             HttpResponseMessage firstResponse2;
                             try
                             {
@@ -1325,17 +1328,17 @@ namespace GTAIVDowngradeUtilityWPF
                                 await Task.Delay(500);
                             }
                             downloadfinished = false;
-                            Logger.Debug(" GFWL-Min patch downloaded.");
-                            Logger.Info(" Extracting GFWL-Min patch...");
+                            Logger.Debug(" FusionFix-GFWLMin downloaded.");
+                            Logger.Info(" Extracting FusionFix-GFWLMin...");
                             ZipFile.ExtractToDirectory("Files\\FusionFix\\FusionFix-GFWLMin.zip", "Files\\FusionFix", true);
                             File.Delete("Files\\FusionFix\\FusionFix-GFWLMin.zip");
-                            Logger.Debug(" GFWL-Min patch extracted.");
+                            Logger.Debug(" FusionFix-GFWLMin patch extracted.");
                             #endregion
                         }
                         else
                         {
                             #region FF-GFWL
-                            Logger.Info(" Downloading the GFWL Patch for FusionFix...");
+                            Logger.Info(" Downloading FusionFix-GFWL...");
                             HttpResponseMessage firstResponse2;
                             try
                             {
@@ -1355,11 +1358,11 @@ namespace GTAIVDowngradeUtilityWPF
                                 await Task.Delay(500);
                             }
                             downloadfinished = false;
-                            Logger.Debug(" GFWL patch downloaded.");
-                            Logger.Info(" Extracting GFWL patch...");
+                            Logger.Debug(" FusionFix-GFWL downloaded.");
+                            Logger.Info(" Extracting FusionFix-GFWL...");
                             ZipFile.ExtractToDirectory("Files\\FusionFix\\FusionFix-GFWL.zip", "Files\\FusionFix", true);
                             File.Delete("Files\\FusionFix\\FusionFix-GFWL.zip");
-                            Logger.Debug(" GFWL patch extracted.");
+                            Logger.Debug(" FusionFix-GFWL extracted.");
                             #endregion
                         }
                     }
