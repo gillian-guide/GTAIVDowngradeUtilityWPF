@@ -1515,7 +1515,7 @@ namespace GTAIVDowngradeUtilityWPF
             #endregion
 
             Logger.Info(" Successfully downgraded!");
-            MessageBox.Show("Your game has been downgraded in accordance with selected options!");
+            MessageBox.Show("Your game has been downgraded in accordance with selected options!\n\nConsider using my Setup Utility aswell for installing DXVK.");
             downgradebtn.Content = "Downgrade";
             options.IsEnabled = true;
             version.IsEnabled = true;
