@@ -1026,7 +1026,6 @@ namespace GTAIVDowngradeUtilityWPF
             if (patch8click.IsChecked == true)
             {
                 Logger.Debug(" Copying 1.0.8.0 GTAIV.exe...");
-                if (gtaccheckbox.IsChecked == true) { File.Copy("Files\\1080\\GTAIV.exe", $"{directory}\\Retail\\GTAIV.exe", true); }
                 File.Copy("Files\\1080\\GTAIV.exe", $"{directory}\\GTAIV.exe", true);
                 Logger.Debug(" Copied 1.0.8.0 GTAIV.exe.");
             }
