@@ -61,7 +61,8 @@
 
                 <Button Grid.Column="0" HorizontalAlignment="Left" Content="Switch to multiplayer" x:Name="mpspbtn" Margin="0,0,0,0" Width="120" Height="21" Click="mpsp_Click"/>
                 <TextBlock Grid.Column="1" HorizontalAlignment="Left" Margin="5,0,0,0" TextWrapping="Wrap" VerticalAlignment="Bottom"><Hyperlink NavigateUri="https://gillian-guide.github.io/" RequestNavigate="Hyperlink_RequestNavigate">Visit my Guide</Hyperlink></TextBlock>
-                <TextBlock Grid.Column="2" x:Name="gtrf" HorizontalAlignment="Left" Margin="5,0,0,0" TextWrapping="Wrap" Visibility="Collapsed" VerticalAlignment="Bottom"><Hyperlink NavigateUri="https://discord.gg/gtrf" RequestNavigate="Hyperlink_RequestNavigate">RevIVal Discord Server</Hyperlink></TextBlock>
+                <TextBlock Grid.Column="2" x:Name="gtrf" HorizontalAlignment="Left" Margin="5,0,0,0" TextWrapping="Wrap" Visibility="Collapsed" VerticalAlignment="Bottom"><Hyperlink NavigateUri="https://discord.gg/gtrf" RequestNavigate="Hyperlink_RequestNavigate">RevIVal Discord</Hyperlink></TextBlock>
+                <TextBlock Grid.Column="3" x:Name="gtac" HorizontalAlignment="Left" Margin="5,0,0,0" TextWrapping="Wrap" Visibility="Collapsed" VerticalAlignment="Bottom"><Hyperlink NavigateUri="https://discord.gg/pASVDP4w48" RequestNavigate="Hyperlink_RequestNavigate">GTAC Discord</Hyperlink></TextBlock>
                 <Button Grid.Column="3" HorizontalAlignment="Right" x:Name="aboutButton" Width="20" Click="aboutButton_Click">
                     <Image Source="../Assets/about.png"></Image>
                 </Button>

@@ -1,10 +1,12 @@
 using GTAIVDowngradeUtilityWPF.Common;
 using GTAIVDowngradeUtilityWPF.Functions;
+using GTAIVSetupUtilityWPF.Common;
 using Microsoft.Win32;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using NLog;
 using RedistributableChecker;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
 using System.Diagnostics;
@@ -249,6 +251,14 @@ namespace GTAIVDowngradeUtilityWPF
             }
         }
 
+        private void ChangeIniValue(string category, string option, string changeTo, IniEditor iniParser)
+        {
+            if (iniParser.ReadValue(category, option) != changeTo)
+            {
+                iniParser.EditValue(category, option, changeTo);
+            }
+        }
+
         private string GetAssemblyVersion()
         {
             return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString()
@@ -304,16 +314,10 @@ namespace GTAIVDowngradeUtilityWPF
         private void gfwlmp_Click(object sender, RoutedEventArgs e)
         {
             Logger.Debug(" User toggled GFWL for Multiplayer.");
-            if (gfwlmpcheckbox.IsChecked == false)
+            if (gfwlmpcheckbox.IsChecked == true)
             {
-                if (achievementscheckbox.IsEnabled == true)
-                {
-                    achievementscheckbox.IsChecked = true;
-                }
-            }
-            else
-            {
-                achievementscheckbox.IsChecked = false;
+                if (achievementscheckbox.IsEnabled) { achievementscheckbox.IsChecked = false; }
+                gtac.Visibility = Visibility.Collapsed;
             }
             if (tipscheck.IsChecked == true)
             {
@@ -325,6 +329,11 @@ namespace GTAIVDowngradeUtilityWPF
         private void gtac_Click(object sender, RoutedEventArgs e)
         {
             Logger.Debug(" User toggled GTAC.");
+            if (gtaccheckbox.IsChecked == true)
+            {
+                if (achievementscheckbox.IsEnabled) { achievementscheckbox.IsChecked = true; }
+                gtac.Visibility = Visibility.Visible;
+            }
             if (tipscheck.IsChecked == true)
             {
                 Logger.Debug(" Displaying a tip...");
@@ -335,16 +344,10 @@ namespace GTAIVDowngradeUtilityWPF
         private void gtacgfwl_Click(object sender, RoutedEventArgs e)
         {
             Logger.Debug(" User toggled Both.");
-            if (gtacgfwlcheckbox.IsChecked == false)
+            if (gtacgfwlcheckbox.IsChecked == true)
             {
-                if (achievementscheckbox.IsEnabled == true)
-                {
-                    achievementscheckbox.IsChecked = true;
-                }
-            }
-            else
-            {
-                achievementscheckbox.IsChecked = false;
+                if (achievementscheckbox.IsEnabled) { achievementscheckbox.IsChecked = false; }
+                gtac.Visibility = Visibility.Visible;
             }
             if (tipscheck.IsChecked == true)
             {
@@ -1023,6 +1026,7 @@ namespace GTAIVDowngradeUtilityWPF
             if (patch8click.IsChecked == true)
             {
                 Logger.Debug(" Copying 1.0.8.0 GTAIV.exe...");
+                if (gtaccheckbox.IsChecked == true) { File.Copy("Files\\1080\\GTAIV.exe", $"{directory}\\Retail\\GTAIV.exe", true); }
                 File.Copy("Files\\1080\\GTAIV.exe", $"{directory}\\GTAIV.exe", true);
                 Logger.Debug(" Copied 1.0.8.0 GTAIV.exe.");
             }
@@ -1194,21 +1198,6 @@ namespace GTAIVDowngradeUtilityWPF
             #region ZolikaPatch
             Logger.Debug(" ### ZolikaPatch checks. ###");
 
-            bool gtacgfwlff = true;
-
-            if (gtacgfwlcheckbox.IsChecked == true && ffixcheckbox.IsChecked == true)
-            {
-                MessageBoxResult result = MessageBox.Show("Press 'Yes' if you want to install FusionFix (it will not initialize in GTAC, but only GFWL). Press 'No' to only install Shader Fixes (which will work in both).", "FusionFix in GTAC", MessageBoxButton.YesNo);
-                if (result == MessageBoxResult.Yes)
-                {
-                    gtacgfwlff = true;
-                }
-                else
-                {
-                    gtacgfwlff = false;
-                }
-            }
-
             if (zpatchcheckbox.IsChecked == true)
             {
                 Logger.Info(" Installing ZolikaPatch and it's matching ini...");
@@ -1216,37 +1205,70 @@ namespace GTAIVDowngradeUtilityWPF
                 Logger.Debug(" ZolikaPatch asi copied.");
 
                 bool gfwlzz = (sp == false && (gfwlmpcheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true));
-                bool ffix = (gtacgfwlff && ffixcheckbox.IsChecked == true);
-                switch (ffix, gfwlzz)
+                Logger.Debug(" Copying ZolikaPatch's ini...");
+                File.Copy("Files\\ZolikaPatch\\ZolikaPatch.ini", $"{directory}\\ZolikaPatch.ini", true);
+                IniEditor zziniParser = new IniEditor($"{directory}\\ZolikaPatch.ini");
+                if (ffixcheckbox.IsChecked == true)
                 {
-                    case (true, true):
-                        {
-                            Logger.Debug(" Copying FF-GFWL ini...");
-                            File.Copy("Files\\ZolikaPatch\\ZolikaPatch-FFix-GFWL.ini", $"{directory}\\ZolikaPatch.ini", true);
-                            Logger.Debug(" Copied FF-GFWL ini.");
-                            break;
-                        }
-                    case (false, true):
-                        {
-                            Logger.Debug(" Copying NoFF-GFWL ini...");
-                            File.Copy("Files\\ZolikaPatch\\ZolikaPatch-NoFFix-GFWL.ini", $"{directory}\\ZolikaPatch.ini", true);
-                            Logger.Debug(" Copied NoFF-GFWL ini.");
-                            break;
-                        }
-                    case (true, false):
-                        {
-                            Logger.Debug(" Copying FF ini...");
-                            File.Copy("Files\\ZolikaPatch\\ZolikaPatch-FFix.ini", $"{directory}\\ZolikaPatch.ini", true);
-                            Logger.Debug(" Copied FF ini.");
-                            break;
-                        }
-                    case (false, false):
-                        {
-                            Logger.Debug(" Copying NoFF ini...");
-                            File.Copy("Files\\ZolikaPatch\\ZolikaPatch-NoFFix.ini", $"{directory}\\ZolikaPatch.ini", true);
-                            Logger.Debug(" Copied NoFF ini.");
-                            break;
-                        }
+                    List<string> incompatibleOptions = new List<string>()
+                    {
+                        "BikePhoneAnimsFix",
+                        "BorderlessWindowed",
+                        "BuildingAlphaFix",
+                        "BuildingDynamicShadows",
+                        "CarDynamicShadowFix",
+                        "CarPartsShadowFix",
+                        "CutsceneFixes",
+                        "DoNotPauseOnMinimize",
+                        "DualVehicleHeadlights",
+                        "EmissiveLerpFix",
+                        "EpisodicVehicleSupport",
+                        "EpisodicWeaponSupport",
+                        "ForceCarHeadlightShadows",
+                        "ForceDynamicShadowsEverywhere",
+                        "ForceShadowsOnObjects",
+                        "HighFPSBikePhysicsFix",
+                        "HighFPSSpeedupFix",
+                        "HighQualityReflections",
+                        "ImprovedShaderStreaming",
+                        "MouseFix",
+                        "NewMemorySystem",
+                        "NoLiveryLimit",
+                        "OutOfCommissionFix",
+                        "PoliceEpisodicWeaponSupport",
+                        "RemoveBoundingBoxCulling",
+                        "ReversingLightFix",
+                        "SkipIntro",
+                        "SkipMenu"
+                    };
+                    foreach (string option in incompatibleOptions)
+                    {
+                        ChangeIniValue("Options", option, "0", zziniParser);
+                    }
+                }
+                if (!sp)
+                {
+                    ChangeIniValue("Options", "BetterMPSync", "1", zziniParser);
+                    ChangeIniValue("Options", "MPNikoCrashFix", "1", zziniParser);
+                }
+                if (gfwlcheckbox.IsChecked == true)
+                {
+                    ChangeIniValue("Options", "SuperLODFix", "1", zziniParser);
+                }
+                if (gtaccheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true)
+                {
+                    List<string> incompatibleOptions = new List<string>()
+                    {
+                        "SkipIntro",
+                        "SkipMenu",
+                        "FastLoading",
+                        "SuperLODFix"
+                    };
+                    foreach (string option in incompatibleOptions)
+                    {
+                        ChangeIniValue("Options", option, "0", zziniParser);
+                    }
+                    ChangeIniValue("Options", "BorderlessWindowed", "1", zziniParser);
                 }
             }
             #endregion
@@ -1409,7 +1431,7 @@ namespace GTAIVDowngradeUtilityWPF
                 CopyFolder("Files\\FusionFix\\", $"{directory}");
                 Logger.Debug(" FusionFix copied.");
             }
-            else if (ffixcheckbox.IsChecked == true && gtaccheckbox.IsChecked == true)
+            if (ffixcheckbox.IsChecked == true && (gtaccheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true))
                 {
                     #region Shader Fixes
                     Logger.Info(" GTA Connected install: installing Shader Fixes...");
@@ -1443,7 +1465,7 @@ namespace GTAIVDowngradeUtilityWPF
                         Logger.Debug(" Shader Fixes extracted.");
                     }
                     Logger.Info(" Copying Shader Fixes...");
-                    CopyFolder("Files\\ShaderFixes\\", $"{directory}");
+                    CopyFolder("Files\\ShaderFixes\\", $"{directory}\\Mods");
                     Logger.Debug(" Shader Fixes copied.");
                     #endregion
                 }
