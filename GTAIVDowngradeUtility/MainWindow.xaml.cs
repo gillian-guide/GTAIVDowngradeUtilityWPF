@@ -1260,16 +1260,32 @@ namespace GTAIVDowngradeUtilityWPF
                 }
                 if (!sp)
                 {
-                    ChangeIniValue("Options", "BetterMPSync", "1", zziniParser);
-                    ChangeIniValue("Options", "MPNikoCrashFix", "1", zziniParser);
-                    ChangeIniValue("Options", "SkipMenu", "1", zziniParser);
+                    List<string> multiplayerOptions = new List<string>()
+                    {
+                        "BetterMPSync",
+                        "MPNikoCrashFix",
+                        "SkipMenu",
+                        "GroupHackFix",
+                        "BadPlayerModelCrashFix",
+                        "BetterMPSync",
+                        "BlackscreenFix",
+                        "CollisionDeadlockFix",
+                        "CrashMsgFix",
+                        "FreezeCarFix",
+                        "IncreasePtrNodes",
+                        "Patch6and7RemoveModChecks",
+                        "PathNodeCrashFix",
+                        "RemoveAllWeaponsProtection",
+                        "SuperLODFix",
+                        "TeleportProtection"
+                    };
+                    foreach (string option in multiplayerOptions)
+                    {
+                        ChangeIniValue("Options", option, "1", zziniParser);
+                    }
                     isiniedited = true;
                 }
-                if (gfwlcheckbox.IsChecked == true)
-                {
-                    ChangeIniValue("Options", "SuperLODFix", "1", zziniParser);
-                    isiniedited = true;
-                }
+                if (patch7click.IsChecked == true) { ChangeIniValue("Options", "VSyncFix", "1", zziniParser); isiniedited = true; }
                 if (gtaccheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true)
                 {
                     List<string> incompatibleOptions = new List<string>()
