@@ -363,7 +363,7 @@ namespace GTAIVDowngradeUtilityWPF
             if (tipscheck.IsChecked == true)
             {
                 Logger.Debug(" Displaying a tip...");
-                MessageBox.Show("This option will attempt to ensure simultaneous GFWL and GTAC compatibility.\n\nNote that this will sacrifice stability in both GFWL and GTAC. Make two separate installs for maximized stability.");
+                MessageBox.Show("This option will attempt to ensure simultaneous GFWL and GTAC compatibility.\n\nNote that this will sacrifice stability in both GFWL and GTAC and slightly make graphics in GTAC worse. Make two separate installs for maximized stability.");
             }
         }
         #endregion
