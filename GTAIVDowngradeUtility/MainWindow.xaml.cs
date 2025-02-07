@@ -152,6 +152,8 @@ namespace GTAIVDowngradeUtilityWPF
                 gfwlmpcheckbox.IsChecked = true;
                 gtrf.Visibility = Visibility.Visible;
             }
+            ffixcheckbox.Content = "FusionFix";
+            ffixmincheckbox.IsEnabled = true;
         }
 
         private void advanced_Click(object sender, RoutedEventArgs e)
@@ -317,6 +319,9 @@ namespace GTAIVDowngradeUtilityWPF
             if (gfwlmpcheckbox.IsChecked == true)
             {
                 if (achievementscheckbox.IsEnabled) { achievementscheckbox.IsChecked = false; }
+                ffixcheckbox.Content = "FusionFix";
+                ffixmincheckbox.IsEnabled = true;
+                ffixmincheckbox.IsChecked = true;
                 gtac.Visibility = Visibility.Collapsed;
             }
             if (tipscheck.IsChecked == true)
@@ -332,6 +337,9 @@ namespace GTAIVDowngradeUtilityWPF
             if (gtaccheckbox.IsChecked == true)
             {
                 if (achievementscheckbox.IsEnabled) { achievementscheckbox.IsChecked = true; }
+                ffixcheckbox.Content = "Shader Fixes";
+                ffixmincheckbox.IsChecked = false;
+                ffixmincheckbox.IsEnabled = false;
                 gtac.Visibility = Visibility.Visible;
             }
             if (tipscheck.IsChecked == true)
@@ -347,12 +355,15 @@ namespace GTAIVDowngradeUtilityWPF
             if (gtacgfwlcheckbox.IsChecked == true)
             {
                 if (achievementscheckbox.IsEnabled) { achievementscheckbox.IsChecked = false; }
+                ffixcheckbox.Content = "FusionFix & SF";
+                ffixmincheckbox.IsEnabled = true;
+                ffixmincheckbox.IsChecked = true;
                 gtac.Visibility = Visibility.Visible;
             }
             if (tipscheck.IsChecked == true)
             {
                 Logger.Debug(" Displaying a tip...");
-                MessageBox.Show("This option will attempt to ensure simultaneous GFWL and GTAC compatibility.");
+                MessageBox.Show("This option will attempt to ensure simultaneous GFWL and GTAC compatibility.\n\nNote that this will sacrifice stability in both GFWL and GTAC. Make two separate installs for maximized stability.");
             }
         }
         #endregion
@@ -440,7 +451,7 @@ namespace GTAIVDowngradeUtilityWPF
             if (tipscheck.IsChecked == true)
             {
                 Logger.Debug(" Displaying a tip...");
-                MessageBox.Show("This option installs FusionFix (and GFWL patch if GFWL is enabled).\n\nGenerally not necessary, but it provides a lot of improvements to the shaders and adds in a way to load mods without replacing original files. Also helpful for downgrading radio.");
+                MessageBox.Show("This option installs FusionFix (and GFWL patch if downgrading for multiplayer) and/or Shader Fixes when downgrading for GTA Connected.\n\nGenerally not necessary, but it provides a lot of improvements&fixes to the shaders and visuals.");
             }
         }
 
@@ -1207,6 +1218,7 @@ namespace GTAIVDowngradeUtilityWPF
                 Logger.Debug(" Copying ZolikaPatch's ini...");
                 File.Copy("Files\\ZolikaPatch\\ZolikaPatch.ini", $"{directory}\\ZolikaPatch.ini", true);
                 IniEditor zziniParser = new IniEditor($"{directory}\\ZolikaPatch.ini");
+                bool isiniedited = false;
                 if (ffixcheckbox.IsChecked == true)
                 {
                     List<string> incompatibleOptions = new List<string>()
@@ -1243,32 +1255,50 @@ namespace GTAIVDowngradeUtilityWPF
                     foreach (string option in incompatibleOptions)
                     {
                         ChangeIniValue("Options", option, "0", zziniParser);
+                        isiniedited = true;
                     }
                 }
                 if (!sp)
                 {
                     ChangeIniValue("Options", "BetterMPSync", "1", zziniParser);
                     ChangeIniValue("Options", "MPNikoCrashFix", "1", zziniParser);
+                    ChangeIniValue("Options", "SkipMenu", "1", zziniParser);
+                    isiniedited = true;
                 }
                 if (gfwlcheckbox.IsChecked == true)
                 {
                     ChangeIniValue("Options", "SuperLODFix", "1", zziniParser);
+                    isiniedited = true;
                 }
                 if (gtaccheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true)
                 {
                     List<string> incompatibleOptions = new List<string>()
                     {
-                        "SkipIntro",
                         "SkipMenu",
                         "FastLoading",
+                        "RemoveGFWLUpdatePopup",
                         "SuperLODFix"
                     };
+                    if (gtaccheckbox.IsChecked == true)
+                    {
+                        incompatibleOptions.Add("SkipIntro");
+                        incompatibleOptions.Add("LoadDLCs");
+                        incompatibleOptions.Add("IncreasePtrNodes");
+                        incompatibleOptions.Add("MiscFixes");
+                        incompatibleOptions.Add("MPNikoCrashFix");
+                        incompatibleOptions.Add("NewFilesCompatibility");
+                        incompatibleOptions.Add("NewMemorySystem");
+                        incompatibleOptions.Add("SMPA60Fix");
+                    }
                     foreach (string option in incompatibleOptions)
                     {
                         ChangeIniValue("Options", option, "0", zziniParser);
                     }
                     ChangeIniValue("Options", "BorderlessWindowed", "1", zziniParser);
+                    ChangeIniValue("Options", "DoNotPauseOnMinimize", "1", zziniParser);
+                    isiniedited = true;
                 }
+                if (isiniedited) { zziniParser.SaveFile(); }
             }
             #endregion
 
