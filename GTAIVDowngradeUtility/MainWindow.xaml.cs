@@ -1210,7 +1210,7 @@ namespace GTAIVDowngradeUtilityWPF
 
             if (zpatchcheckbox.IsChecked == true)
             {
-                Logger.Info(" Installing ZolikaPatch and it's matching ini...");
+                Logger.Info(" Installing ZolikaPatch...");
                 File.Copy("Files\\ZolikaPatch\\ZolikaPatch.asi", $"{directory}\\ZolikaPatch.asi", true);
                 Logger.Debug(" ZolikaPatch asi copied.");
 
@@ -1219,8 +1219,9 @@ namespace GTAIVDowngradeUtilityWPF
                 File.Copy("Files\\ZolikaPatch\\ZolikaPatch.ini", $"{directory}\\ZolikaPatch.ini", true);
                 IniEditor zziniParser = new IniEditor($"{directory}\\ZolikaPatch.ini");
                 bool isiniedited = false;
-                if (ffixcheckbox.IsChecked == true)
+                if (ffixcheckbox.IsChecked == true && gtaccheckbox.IsChecked == false)
                 {
+                    Logger.Debug(" Disabling incompatible FusionFix options...");
                     List<string> incompatibleOptions = new List<string>()
                     {
                         "BikePhoneAnimsFix",
@@ -1260,11 +1261,11 @@ namespace GTAIVDowngradeUtilityWPF
                 }
                 if (!sp)
                 {
+                    Logger.Debug(" Enabling multiplayer options...");
                     List<string> multiplayerOptions = new List<string>()
                     {
                         "BetterMPSync",
                         "MPNikoCrashFix",
-                        "SkipMenu",
                         "GroupHackFix",
                         "BadPlayerModelCrashFix",
                         "BetterMPSync",
@@ -1285,12 +1286,11 @@ namespace GTAIVDowngradeUtilityWPF
                     }
                     isiniedited = true;
                 }
-                if (patch7click.IsChecked == true) { ChangeIniValue("Options", "VSyncFix", "1", zziniParser); isiniedited = true; }
                 if (gtaccheckbox.IsChecked == true || gtacgfwlcheckbox.IsChecked == true)
                 {
+                    Logger.Debug(" Disabling incompatible GTAC options...");
                     List<string> incompatibleOptions = new List<string>()
                     {
-                        "SkipMenu",
                         "FastLoading",
                         "RemoveGFWLUpdatePopup",
                         "SuperLODFix"
@@ -1305,6 +1305,7 @@ namespace GTAIVDowngradeUtilityWPF
                         incompatibleOptions.Add("NewFilesCompatibility");
                         incompatibleOptions.Add("NewMemorySystem");
                         incompatibleOptions.Add("SMPA60Fix");
+
                     }
                     foreach (string option in incompatibleOptions)
                     {
@@ -1314,7 +1315,8 @@ namespace GTAIVDowngradeUtilityWPF
                     ChangeIniValue("Options", "DoNotPauseOnMinimize", "1", zziniParser);
                     isiniedited = true;
                 }
-                if (isiniedited) { zziniParser.SaveFile(); }
+                if (patch7click.IsChecked == true) { Logger.Debug(" Enabling VSyncFix..."); ChangeIniValue("Options", "VSyncFix", "1", zziniParser); isiniedited = true; }
+                if (isiniedited) { Logger.Debug(" Saving the changes..."); zziniParser.SaveFile(); }
             }
             #endregion
 
